@@ -28,7 +28,7 @@ export interface BodyParameters
 export abstract class Body extends Container
 {
     protected _boundingBox : Rectangle = new Rectangle();
-    public override transform : ObservableTransform;
+    //public override transform : ObservableTransform;
     static bodyPool : Body[] = [];
     public velocity : Point = new Point(0, 0);
     public acceleration : Point = new Point(0, 0);
@@ -68,12 +68,6 @@ export abstract class Body extends Container
 
     public get boundingBox() : Rectangle
     {
-        if (this.transform.changed)
-        {
-            this.transform.reset();
-            this._boundingBox = this.updateBoundingBox();
-        }
-
         return this._boundingBox;
     }
 

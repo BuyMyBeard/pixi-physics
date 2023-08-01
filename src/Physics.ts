@@ -13,6 +13,7 @@ export class Physics
     static update()
     {
         const listOfPairs = sweepAndPrune(Body.bodyPool);
+        const newCollisions : Collision[] = [];
 
         // console.log("unoptimized", this.bodyPool.length * this.bodyPool.length);
         // console.log("reduced", listOfPairs.length);
@@ -27,7 +28,7 @@ export class Physics
                 if (pair[0].onCollisionEnter !== undefined) pair[0].onCollisionEnter(collision);
                 if (pair[1].onCollisionEnter !== undefined) pair[1].onCollisionEnter(collision);
                 this.respondToCollision(pair[0], pair[1]);
-                Collision.collisionsInProgress.push(new Collision(pair[0], pair[1], 0));
+                newCollisions.push(new Collision(pair[0], pair[1], 0));
             }
             else if (collision && index !== -1)
             {
@@ -35,15 +36,17 @@ export class Physics
                 if (pair[0].onCollisionStay !== undefined) pair[0].onCollisionStay(collision);
                 if (pair[1].onCollisionStay !== undefined) pair[1].onCollisionStay(collision);
                 Physics.resolveCollision(pair[0], pair[1]);
-            }
-            else if (index !== -1 && !collision)
-            {
-                const previousCollision = Collision.collisionsInProgress.splice(index, 1)[0];
-
-                if (pair[0].onCollisionExit !== undefined) pair[0].onCollisionExit(previousCollision);
-                if (pair[1].onCollisionExit !== undefined) pair[1].onCollisionExit(previousCollision);
+                Collision.collisionsInProgress.splice(index, 1);
+                newCollisions.push(new Collision(pair[0], pair[1], 0));
             }
         });
+
+        Collision.collisionsInProgress.forEach((collision) => {
+            if (collision.c1.onCollisionExit !== undefined) collision.c1.onCollisionExit(collision);
+            if (collision.c2.onCollisionExit !== undefined) collision.c2.onCollisionExit(collision);
+        });
+
+        Collision.collisionsInProgress = newCollisions;
     }
 
     private static respondToCollision(c1 : Body, c2 : Body)

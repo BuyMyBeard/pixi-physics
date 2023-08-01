@@ -23,6 +23,7 @@ export class PolygonBody extends Body
         this.rawVertices = vertices;
         Object.assign(this, params);
         this.transform.updateLocalTransform();
+        this.transform.updateTransform(this.parent.transform);
         this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
         this._boundingBox = this.updateBoundingBox();
         const color : ColorSource = params === undefined || params.color === undefined ? 0xFFFFFF : params.color;
@@ -35,9 +36,10 @@ export class PolygonBody extends Body
 
     public updateVertices()
     {
-        if (this.transform.changed)
+        if ((this.transform as ObservableTransform).changed)
         {
-            this.transform.reset();
+            (this.transform as ObservableTransform).reset();
+            this.transform.updateTransform(this.parent.transform);
             this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
             this._boundingBox = this.updateBoundingBox();
         }

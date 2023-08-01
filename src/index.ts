@@ -121,6 +121,13 @@ function updateLoop(deltaTime : number)
         case 'Down':
             c2.y += speed * deltaTime;
             break;
+
+        case 'Attack':
+            console.log(c2.transform);
+            break;
+
+        case 'Interact':
+            c2.rotation += 0.05 * deltaTime;
     }
 }
 Ticker.shared.add(updateLoop);

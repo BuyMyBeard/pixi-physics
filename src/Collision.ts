@@ -101,8 +101,7 @@ export class Collision
             const minP2 = Math.min(...projectedP2);
             const maxP2 = Math.max(...projectedP2);
 
-            projectedP2.sort();
-            if (minP1 >= maxP2 || minP2 < maxP1)
+            if (minP1 >= maxP2 || minP2 >= maxP1)
             {
                 return false;
             }

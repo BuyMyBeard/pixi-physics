@@ -10,7 +10,8 @@ export class ObservableTransform extends Transform
         this._savedWorldID = this._worldID;
         this._savedLocalID = this._localID;
     }
-    public reset() {
+    public reset()
+    {
         this._savedWorldID = this._worldID;
         this._savedLocalID = this._localID;
     }
