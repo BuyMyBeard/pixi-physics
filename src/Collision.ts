@@ -1,0 +1,121 @@
+import { Point } from 'pixi.js';
+import { Body } from './Body';
+import { CircleBody } from './CircleBody';
+import { PolygonBody } from './PolygonBody';
+
+export class Collision
+{
+    static collisionsInProgress : Collision[] = [];
+    depth : number;
+    c1 : Body;
+    c2 : Body;
+
+    public constructor(c1 : Body, c2 : Body, depth : number)
+    {
+        this.c1 = c1;
+        this.c2 = c2;
+        this.depth = depth;
+    }
+
+    public equals(collision : Collision)
+    {
+        return (this.c1 === collision.c1 && this.c2 === collision.c2)
+        || (this.c1 === collision.c2 && this.c2 === collision.c1);
+    }
+
+    public containsColliders(c1 : Body, c2 : Body)
+    {
+        return (this.c1 === c1 && this.c2 === c2) || (this.c1 === c2 && this.c2 === c1);
+    }
+
+    public static collisionIndex(pair : [Body, Body]) : number
+    {
+        for (let i = 0; i < Collision.collisionsInProgress.length; i++)
+        {
+            if (Collision.collisionsInProgress[i].containsColliders(pair[0], pair[1]))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    public static test(c1 : Body, c2 : Body) : Collision | false
+    {
+        let collision : Collision | false = false;
+
+        if (c1 instanceof CircleBody && c2 instanceof CircleBody)
+        {
+            collision = Collision.testCircleCircle(c1, c2);
+        }
+        else if (c1 instanceof PolygonBody && c2 instanceof PolygonBody)
+        {
+            collision = Collision.testPolyPoly(c1, c2);
+        }
+        else if (c1 instanceof PolygonBody && c2 instanceof CircleBody)
+        {
+            collision = Collision.testCirclePoly(c2, c1);
+        }
+        else if (c1 instanceof CircleBody && c2 instanceof PolygonBody)
+        {
+            collision = Collision.testCirclePoly(c1, c2);
+        }
+
+        return collision;
+    }
+
+    private static testCircleCircle(cb1 : CircleBody, cb2 : CircleBody, outCollision? : Collision) : Collision | false
+    {
+        const distance = cb1.getGlobalPosition().subtract(cb2.getGlobalPosition()).magnitude();
+        const depth = cb1.radius + cb2.radius - distance;
+
+        if (depth <= 0) return false;
+
+        const collision = new Collision(cb1, cb2, depth);
+
+        if (outCollision !== undefined) outCollision = collision;
+
+        return collision;
+    }
+
+    private static testPolyPoly(pb1 : PolygonBody, pb2 : PolygonBody, outCollision? : Collision) : Collision | false
+    {
+        const edges = [...pb1.edges, ...pb2.edges];
+        const normals = edges.map((edge) =>
+        {
+            const tangent = edge[1].subtract(edge[0]);
+
+            return new Point(-tangent.y, tangent.x);
+        });
+        // potentially less efficient overall
+        // const normalsWithoutDuplicates : Point[] = [];
+        // normals.forEach(n => {if (normalsWithoutDuplicates.every(o => !n.equals(o))) normalsWithoutDuplicates.push(n)});
+
+        for (const n of normals)
+        {
+            const projectedP1 = pb1.vertices.map((v) => v.project(n).magnitude());
+            const projectedP2 = pb2.vertices.map((v) => v.project(n).magnitude());
+            const minP1 = Math.min(...projectedP1);
+            const maxP1 = Math.max(...projectedP1);
+            const minP2 = Math.min(...projectedP2);
+            const maxP2 = Math.max(...projectedP2);
+
+            projectedP2.sort();
+            if (minP1 >= maxP2 || minP2 < maxP1)
+            {
+                return false;
+            }
+        }
+        const collision = new Collision(pb1, pb2, 0);
+
+        if (outCollision !== undefined) outCollision = collision;
+
+        return new Collision(pb1, pb2, 0);
+    }
+
+    private static testCirclePoly(cb : CircleBody, pb : PolygonBody, outCollision? : Collision) : Collision | false
+    {
+        return false;
+    }
+}
