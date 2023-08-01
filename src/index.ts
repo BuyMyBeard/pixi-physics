@@ -77,7 +77,7 @@ const c = new PolygonBody(vertices, {
     },
     color: 0xAAAAAA,
 });
-const c2 = new CircleBody({
+const c2 = new PolygonBody(vertices, {
     position: new Point(100, 100),
     scale: new Point(1, 1),
     lineStyle: {

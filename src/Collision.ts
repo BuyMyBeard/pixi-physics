@@ -126,7 +126,7 @@ export class Collision
                 collisionNormal = n;
             }
         }
-        const collision = new Collision(pb1, pb2, collisionDepth, collisionNormal);
+        const collision = new Collision(pb1, pb2, collisionDepth, collisionNormal.normalize());
 
         if (outCollision !== undefined) outCollision = collision;
 
