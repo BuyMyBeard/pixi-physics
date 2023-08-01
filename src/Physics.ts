@@ -20,20 +20,28 @@ export class Physics
         {
             // this.getPairArray().forEach((pair) => {
             const index = Collision.collisionIndex(pair);
-            const isColliding = Collision.test(pair[0], pair[1]);
+            const collision = Collision.test(pair[0], pair[1]);
 
-            if (index === -1 && isColliding)
+            if (index === -1 && collision)
             {
+                if (pair[0].onCollisionEnter !== undefined) pair[0].onCollisionEnter(collision);
+                if (pair[1].onCollisionEnter !== undefined) pair[1].onCollisionEnter(collision);
                 this.respondToCollision(pair[0], pair[1]);
                 Collision.collisionsInProgress.push(new Collision(pair[0], pair[1], 0));
             }
-            else if (index !== -1 && !isColliding)
+            else if (collision && index !== -1)
             {
-                Collision.collisionsInProgress.splice(index, 1);
-            }
-            else if (isColliding && index !== -1)
-            {
+                Collision.collisionsInProgress[index] = collision;
+                if (pair[0].onCollisionStay !== undefined) pair[0].onCollisionStay(collision);
+                if (pair[1].onCollisionStay !== undefined) pair[1].onCollisionStay(collision);
                 Physics.resolveCollision(pair[0], pair[1]);
+            }
+            else if (index !== -1 && !collision)
+            {
+                const previousCollision = Collision.collisionsInProgress.splice(index, 1)[0];
+
+                if (pair[0].onCollisionExit !== undefined) pair[0].onCollisionExit(previousCollision);
+                if (pair[1].onCollisionExit !== undefined) pair[1].onCollisionExit(previousCollision);
             }
         });
     }

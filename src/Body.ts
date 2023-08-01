@@ -1,16 +1,32 @@
-import { Graphics, Point, Container, Sprite } from 'pixi.js';
+import { Graphics, Point, Container, Sprite, ColorSource, ILineStyleOptions } from 'pixi.js';
 import { app } from '.';
 import '@pixi/math-extras';
 import { ObservableTransform } from './ObservableTransform';
+import { Collision } from './Collision';
 
 export type BodyType = 'Dynamic' | 'Kinematic' | 'Static';
+
+export interface BodyParameters
+{
+    position? : Point;
+    rotation? : number;
+    scale? : Point;
+    velocity? : Point;
+    acceleration? : Point;
+    bodyType? : BodyType;
+    friction? : number;
+    bounciness? : number;
+    density? : number;
+    color? : ColorSource;
+    mass? : number;
+    lineStyle? : ILineStyleOptions;
+};
 
 /**
  * Parent class of all physics bodies
  */
 export abstract class Body extends Container
 {
-    public override transform : ObservableTransform;
     static bodyPool : Body[] = [];
     public velocity : Point = new Point(0, 0);
     public acceleration : Point = new Point(0, 0);
@@ -22,11 +38,13 @@ export abstract class Body extends Container
     protected queuedResponse : Point | null = null;
     public graphics = new Graphics();
     public sprite = new Sprite();
+    public onCollisionEnter? : (collision : Collision) => void;
+    public onCollisionStay? : (collision : Collision) => void;
+    public onCollisionExit? : (collision : Collision) => void;
 
     constructor()
     {
         super();
-        this.transform = new ObservableTransform();
         this.addChild(this.graphics);
         this.addChild(this.sprite);
         Body.bodyPool.push(this);

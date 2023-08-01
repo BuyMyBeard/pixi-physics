@@ -24,6 +24,9 @@ for (let i = 0; i < 100; i++)
         color: Math.random() * 16777215,
         // acceleration: new Point(0, 0.1),
     });
+    ball.onCollisionEnter = () => console.log('entered');
+    ball.onCollisionStay = () => console.log('stayed');
+    ball.onCollisionExit = () => console.log('exited');
 }
 // new Circle({
 // 	position: new Point(1000, 200),

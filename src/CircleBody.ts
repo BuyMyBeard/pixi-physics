@@ -1,18 +1,10 @@
 import { IPointData, Point } from 'pixi.js';
-import { Body, BodyType } from './Body';
+import { Body, BodyParameters, BodyType } from './Body';
 
-type BallParameters = {
-    position? : Point;
-    velocity? : Point;
-    acceleration? : Point;
+interface BallParameters extends BodyParameters
+{
     radius? : number;
-    bodyType? : BodyType;
-    friction? : number;
-    bounciness? : number;
-    density? : number;
-    color? : number;
-    mass? : number;
-};
+}
 export class CircleBody extends Body
 {
     override get boundingBoxCorner(): Point
@@ -34,7 +26,7 @@ export class CircleBody extends Body
     {
         super();
         Object.assign(this, params);
-        const color : number = params === undefined || params.color === undefined ? 0xAA0000 : params.color;
+        const color = params === undefined || params.color === undefined ? 0xAA0000 : params.color;
 
         this.graphics.beginFill(color);
         this.graphics.drawCircle(0, 0, this.radius);

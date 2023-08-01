@@ -1,31 +1,18 @@
-import { Body, BodyType } from './Body';
+import { Body, BodyParameters, BodyType } from './Body';
 import { ColorSource, ILineStyleOptions, Point } from 'pixi.js';
 import { MathUtils, Segment } from './MathUtils';
 import { ObservableTransform } from './ObservableTransform';
 
-type PolygonParameters = {
-    position? : Point;
-    rotation? : number;
-    scale? : Point;
-    velocity? : Point;
-    acceleration? : Point;
-    bodyType? : BodyType;
-    friction? : number;
-    bounciness? : number;
-    density? : number;
-    color? : ColorSource;
-    mass? : number;
-    lineStyle? : ILineStyleOptions;
-};
-
 export class PolygonBody extends Body
 {
+    public override transform : ObservableTransform;
     _isConvex : boolean;
     rawVertices : Point[];
     public vertices : Point[];
-    constructor(vertices : Point[], params? : PolygonParameters)
+    constructor(vertices : Point[], params? : BodyParameters)
     {
         super();
+        this.transform = new ObservableTransform();
         if (vertices.length < 3)
         {
             throw new Error('Polygon needs at least 3 vertices');
