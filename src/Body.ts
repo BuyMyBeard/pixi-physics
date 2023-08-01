@@ -1,4 +1,4 @@
-import { Graphics, Point, Container, Sprite, ColorSource, ILineStyleOptions } from 'pixi.js';
+import { Graphics, Point, Container, Sprite, ColorSource, ILineStyleOptions, Rectangle } from 'pixi.js';
 import { app } from '.';
 import '@pixi/math-extras';
 import { ObservableTransform } from './ObservableTransform';
@@ -27,6 +27,8 @@ export interface BodyParameters
  */
 export abstract class Body extends Container
 {
+    protected _boundingBox : Rectangle = new Rectangle();
+    public override transform : ObservableTransform;
     static bodyPool : Body[] = [];
     public velocity : Point = new Point(0, 0);
     public acceleration : Point = new Point(0, 0);
@@ -38,13 +40,23 @@ export abstract class Body extends Container
     protected queuedResponse : Point | null = null;
     public graphics = new Graphics();
     public sprite = new Sprite();
+    /**
+     * Called when this body enters collision with another body
+     */
     public onCollisionEnter? : (collision : Collision) => void;
+    /**
+     * Called every frame when this body stays inside the collider of another body
+     */
     public onCollisionStay? : (collision : Collision) => void;
+    /**
+     * Called when this body exits the collider of another body
+     */
     public onCollisionExit? : (collision : Collision) => void;
 
     constructor()
     {
         super();
+        this.transform = new ObservableTransform();
         this.addChild(this.graphics);
         this.addChild(this.sprite);
         Body.bodyPool.push(this);
@@ -54,9 +66,18 @@ export abstract class Body extends Container
         this.sprite.zIndex = 1;
     }
 
-    abstract get boundingBoxCorner() : Point;
-    abstract get boundingBoxWidth() : number;
-    abstract get boundingBoxHeight() : number;
+    public get boundingBox() : Rectangle
+    {
+        if (this.transform.changed)
+        {
+            this.transform.reset();
+            this._boundingBox = this.updateBoundingBox();
+        }
+
+        return this._boundingBox;
+    }
+
+    protected abstract updateBoundingBox() : Rectangle;
 
     public queueResponse(velocity : Point)
     {

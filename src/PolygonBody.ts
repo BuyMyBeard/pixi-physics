@@ -1,18 +1,16 @@
 import { Body, BodyParameters, BodyType } from './Body';
-import { ColorSource, ILineStyleOptions, Point } from 'pixi.js';
+import { ColorSource, ILineStyleOptions, Point, Rectangle } from 'pixi.js';
 import { MathUtils, Segment } from './MathUtils';
 import { ObservableTransform } from './ObservableTransform';
 
 export class PolygonBody extends Body
 {
-    public override transform : ObservableTransform;
     _isConvex : boolean;
     rawVertices : Point[];
     public vertices : Point[];
     constructor(vertices : Point[], params? : BodyParameters)
     {
         super();
-        this.transform = new ObservableTransform();
         if (vertices.length < 3)
         {
             throw new Error('Polygon needs at least 3 vertices');
@@ -26,6 +24,7 @@ export class PolygonBody extends Body
         Object.assign(this, params);
         this.transform.updateLocalTransform();
         this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
+        this._boundingBox = this.updateBoundingBox();
         const color : ColorSource = params === undefined || params.color === undefined ? 0xFFFFFF : params.color;
 
         if (params !== undefined && params.lineStyle !== undefined) this.graphics.lineStyle(params.lineStyle);
@@ -40,6 +39,7 @@ export class PolygonBody extends Body
         {
             this.transform.reset();
             this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
+            this._boundingBox = this.updateBoundingBox();
         }
     }
 
@@ -54,54 +54,35 @@ export class PolygonBody extends Body
         return this.collidesWithPoint(v);
     }
 
-    override get boundingBoxCorner(): Point
+    protected override updateBoundingBox(): Rectangle
     {
-        const boundingBoxCorner = this.vertices[0].clone();
+        const corner = this.vertices[0].clone();
 
         for (let i = 1; i < this.vertices.length; i++)
         {
-            if (this.vertices[i].x < boundingBoxCorner.x)
+            if (this.vertices[i].x < corner.x)
             {
-                boundingBoxCorner.x = this.vertices[i].x;
+                corner.x = this.vertices[i].x;
             }
-            if (this.vertices[i].y < boundingBoxCorner.y)
+            if (this.vertices[i].y < corner.y)
             {
-                boundingBoxCorner.y = this.vertices[i].y;
+                corner.y = this.vertices[i].y;
             }
         }
-
-        return boundingBoxCorner;
-    }
-    override get boundingBoxWidth(): number
-    {
-        const corner = this.boundingBoxCorner;
         let width = 0;
-
-        for (const v of this.vertices)
-        {
-            if (width < v.x - corner.x)
-            {
-                width = v.x - corner.x;
-            }
-        }
-
-        return width;
-    }
-    override get boundingBoxHeight(): number
-    {
-        const corner = this.boundingBoxCorner;
         let height = 0;
 
         for (const v of this.vertices)
         {
-            if (height < v.y - corner.y)
-            {
-                height = v.y - corner.y;
-            }
+            if (width < v.x - corner.x) width = v.x - corner.x;
+            if (height < v.y - corner.y) height = v.y - corner.y;
         }
 
-        return height;
+        return new Rectangle(corner.x, corner.y, width, height);
     }
+
+
+
 
     public get edges() : Array<Segment>
     {
@@ -124,7 +105,8 @@ export class PolygonBody extends Body
 
     public collidesWithPoint(point : Point) : boolean
     {
-        const pointOutside = this.boundingBoxCorner.add(new Point(-1, 0));
+        const boundingBox = this.boundingBox;
+        const pointOutside = new Point(boundingBox.x, boundingBox.y).add(new Point(-1, 0));
         const ray : Segment = [pointOutside, point];
         let intersectionCount = 0;
 
