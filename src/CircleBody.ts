@@ -10,7 +10,10 @@ export class CircleBody extends Body
 {
     protected _rawRadius = 50;
     protected _radius = 50;
-
+    
+    public override get centroid(): Point {
+        return this.getGlobalPosition();
+    }
     public get radius()
     {
         return this._radius;

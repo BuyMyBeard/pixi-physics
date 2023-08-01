@@ -73,6 +73,7 @@ export abstract class Body extends Container
     }
 
     protected abstract updateBoundingBox() : Rectangle;
+    public abstract get centroid() : Point;
 
     public queueResponse(velocity : Point)
     {

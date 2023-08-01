@@ -73,25 +73,12 @@ export class Physics
 
     private static resolveCollision(collision : Collision)
     {
-        collision.c1.queueResolution(collision.normal.multiplyScalar(collision.depth * 0.5));
-        collision.c2.queueResolution(collision.normal.multiplyScalar(-collision.depth * 0.5));
-        // if (collision.c1 instanceof CircleBody && collision.c2 instanceof CircleBody)
-        // {
-        //     // TODO: actually resolve collision instead of pushing away bodies
-        //     Physics.resolveCircleCircle(collision);
-        // }
-        // else if (collision.c1 instanceof PolygonBody && collision.c2 instanceof PolygonBody)
-        // {
-        //     // TODO:
-        // }
-        // else if (collision.c1 instanceof PolygonBody && collision.c2 instanceof CircleBody)
-        // {
-        //     // TODO:
-        // }
-        // else if (collision.c1 instanceof CircleBody && collision.c2 instanceof PolygonBody)
-        // {
-        //     // TODO:
-        // }
+        const centroid1 = collision.c1.centroid;
+        const centroid2 = collision.c2.centroid;
+        const direction = Math.sign(collision.normal.dot(centroid2.subtract(centroid1)));
+
+        collision.c1.queueResolution(collision.normal.multiplyScalar(-collision.depth * 0.5 * direction));
+        collision.c2.queueResolution(collision.normal.multiplyScalar(collision.depth * 0.5 * direction));
     }
 
     private static circleCircleResponse(cb1: CircleBody, cb2 : CircleBody)

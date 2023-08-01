@@ -14,14 +14,14 @@ export const app = new Application({
     width: window.innerWidth,
     height: window.innerHeight,
 });
-for (let i = 0; i < 100; i++)
+for (let i = 0; i < 0; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
 
     new CircleBody({
         position,
-        velocity,
+        // velocity,
         radius: (Math.random() * 30) + 5,
         color: Math.random() * 16777215,
         // acceleration: new Point(0, 0.1),
@@ -77,7 +77,7 @@ const c = new PolygonBody(vertices, {
     },
     color: 0xAAAAAA,
 });
-const c2 = new PolygonBody(vertices, {
+const c2 = new CircleBody({
     position: new Point(100, 100),
     scale: new Point(1, 1),
     lineStyle: {

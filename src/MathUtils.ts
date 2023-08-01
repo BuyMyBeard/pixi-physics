@@ -42,4 +42,23 @@ export class MathUtils
     {
         return (Math.random() * (max - min)) + min;
     }
+
+    static closestPoint(to : Point, points : Point[])
+    {
+        let minDistance = Number.MAX_VALUE;
+        let closest = new Point(0, 0);
+
+        points.forEach((p) =>
+        {
+            const distance = p.subtract(to).magnitude();
+
+            if (distance < minDistance)
+            {
+                closest = p;
+                minDistance = distance;
+            }
+        });
+
+        return closest;
+    }
 }

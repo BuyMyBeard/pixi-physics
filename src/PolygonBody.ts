@@ -102,6 +102,15 @@ export class PolygonBody extends Body
         return edges;
     }
 
+    public get centroid()
+    {
+        const verticesSum = new Point(0, 0);
+
+        this.vertices.forEach((v) => verticesSum.add(v));
+
+        return verticesSum.multiplyScalar(1 / this.vertices.length);
+    }
+
     public collidesWithPoint(point : Point) : boolean
     {
         const boundingBox = this.boundingBox;

@@ -2,6 +2,7 @@ import { Point } from 'pixi.js';
 import { Body } from './Body';
 import { CircleBody } from './CircleBody';
 import { PolygonBody } from './PolygonBody';
+import { MathUtils } from './MathUtils';
 
 export class Collision
 {
@@ -135,6 +136,54 @@ export class Collision
 
     private static testCirclePoly(cb : CircleBody, pb : PolygonBody, outCollision? : Collision) : Collision | false
     {
-        return false;
+        let collisionDepth = Number.MAX_VALUE;
+        let collisionNormal = new Point(0, 0);
+
+        const circlePos = cb.getGlobalPosition();
+        const circleNormal = circlePos.subtract(MathUtils.closestPoint(circlePos, pb.vertices));
+
+        let normals = pb.edges.map((edge) =>
+        {
+            const tangent = edge[1].subtract(edge[0]);
+
+            return new Point(-tangent.y, tangent.x);
+        });
+
+        normals.push(circleNormal);
+
+        const normalsWithoutDuplicates : Point[] = [];
+
+        normals.forEach((n) =>
+        {
+            if (normalsWithoutDuplicates.every((o) => Math.abs(n.dot(o)) !== 1)) normalsWithoutDuplicates.push(n);
+        });
+
+        normals = normalsWithoutDuplicates;
+        for (const n of normals)
+        {
+            const projectedPolygon = pb.vertices.map((v) => v.project(n).magnitude());
+            const projectedCircle = circlePos.project(n).magnitude();
+            const minP1 = Math.min(...projectedPolygon);
+            const maxP1 = Math.max(...projectedPolygon);
+            const minP2 = projectedCircle - cb.radius;
+            const maxP2 = projectedCircle + cb.radius;
+
+            if (minP1 >= maxP2 || minP2 >= maxP1)
+            {
+                return false;
+            }
+            const currentDepth = Math.min(maxP2 - minP1, minP1 - minP2);
+
+            if (currentDepth < collisionDepth)
+            {
+                collisionDepth = currentDepth;
+                collisionNormal = n;
+            }
+        }
+        const collision = new Collision(cb, pb, collisionDepth, collisionNormal.normalize());
+
+        if (outCollision !== undefined) outCollision = collision;
+
+        return collision;
     }
 }
