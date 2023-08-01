@@ -20,7 +20,7 @@ export interface BodyParameters
     color? : ColorSource;
     mass? : number;
     lineStyle? : ILineStyleOptions;
-};
+}
 
 /**
  * Parent class of all physics bodies
@@ -28,7 +28,7 @@ export interface BodyParameters
 export abstract class Body extends Container
 {
     protected _boundingBox : Rectangle = new Rectangle();
-    //public override transform : ObservableTransform;
+    // public override transform : ObservableTransform;
     static bodyPool : Body[] = [];
     public velocity : Point = new Point(0, 0);
     public acceleration : Point = new Point(0, 0);
@@ -37,7 +37,8 @@ export abstract class Body extends Container
     public friction = 0;
     public bodyType : BodyType = 'Dynamic';
     public mass = 1;
-    protected queuedResponse : Point | null = null;
+    protected queuedResponse? : Point;
+    protected queuedResolution? : Point;
     public graphics = new Graphics();
     public sprite = new Sprite();
     /**
@@ -75,13 +76,25 @@ export abstract class Body extends Container
 
     public queueResponse(velocity : Point)
     {
-        if (this.queuedResponse === null)
+        if (this.queuedResponse === undefined)
         {
             this.queuedResponse = velocity;
         }
         else
         {
             this.queuedResponse.add(velocity);
+        }
+    }
+
+    public queueResolution(translation : Point)
+    {
+        if (this.queuedResolution === undefined)
+        {
+            this.queuedResolution = translation;
+        }
+        else
+        {
+            this.queuedResolution.add(translation);
         }
     }
 
@@ -113,14 +126,23 @@ export abstract class Body extends Container
     // }
     public update(deltaTime : number)
     {
-        if (this.queuedResponse !== null)
+        if (this.queuedResponse !== undefined)
         {
             this.velocity = this.queuedResponse.clone();
-            this.queuedResponse = null;
+            this.queuedResponse = undefined;
         }
         this.velocity = this.velocity.add(this.acceleration.multiplyScalar(deltaTime));
 
         this.x += this.velocity.x * deltaTime;
         this.y += this.velocity.y * deltaTime;
+    }
+
+    public lateUpdate(_ : number)
+    {
+        if (this.queuedResolution !== undefined)
+        {
+            this.position.set(this.x + this.queuedResolution.x, this.y + this.queuedResolution.y);
+            this.queuedResolution = undefined;
+        }
     }
 }

@@ -9,12 +9,14 @@ export class Collision
     depth : number;
     c1 : Body;
     c2 : Body;
+    normal : Point;
 
-    public constructor(c1 : Body, c2 : Body, depth : number)
+    public constructor(c1 : Body, c2 : Body, depth : number, normal : Point)
     {
         this.c1 = c1;
         this.c2 = c2;
         this.depth = depth;
+        this.normal = normal;
     }
 
     public equals(collision : Collision)
@@ -41,7 +43,7 @@ export class Collision
         return -1;
     }
 
-    public static test(c1 : Body, c2 : Body) : Collision | false
+    public static test(c1 : Body, c2 : Body, outCollision? : Collision) : Collision | false
     {
         let collision : Collision | false = false;
 
@@ -62,17 +64,20 @@ export class Collision
             collision = Collision.testCirclePoly(c1, c2);
         }
 
+        if (outCollision !== undefined && collision) outCollision = collision;
+
         return collision;
     }
 
     private static testCircleCircle(cb1 : CircleBody, cb2 : CircleBody, outCollision? : Collision) : Collision | false
     {
-        const distance = cb1.getGlobalPosition().subtract(cb2.getGlobalPosition()).magnitude();
+        const vect = cb1.getGlobalPosition().subtract(cb2.getGlobalPosition());
+        const distance = vect.magnitude();
         const depth = cb1.radius + cb2.radius - distance;
 
         if (depth <= 0) return false;
 
-        const collision = new Collision(cb1, cb2, depth);
+        const collision = new Collision(cb1, cb2, depth, vect.normalize());
 
         if (outCollision !== undefined) outCollision = collision;
 
@@ -81,17 +86,25 @@ export class Collision
 
     private static testPolyPoly(pb1 : PolygonBody, pb2 : PolygonBody, outCollision? : Collision) : Collision | false
     {
+        let collisionDepth = Number.MAX_VALUE;
+        let collisionNormal = new Point(0, 0);
+
         const edges = [...pb1.edges, ...pb2.edges];
-        const normals = edges.map((edge) =>
+        let normals = edges.map((edge) =>
         {
             const tangent = edge[1].subtract(edge[0]);
 
             return new Point(-tangent.y, tangent.x);
         });
-        // potentially less efficient overall
-        // const normalsWithoutDuplicates : Point[] = [];
-        // normals.forEach(n => {if (normalsWithoutDuplicates.every(o => !n.equals(o))) normalsWithoutDuplicates.push(n)});
 
+        const normalsWithoutDuplicates : Point[] = [];
+
+        normals.forEach((n) =>
+        {
+            if (normalsWithoutDuplicates.every((o) => !n.equals(o))) normalsWithoutDuplicates.push(n);
+        });
+
+        normals = normalsWithoutDuplicates;
         for (const n of normals)
         {
             const projectedP1 = pb1.vertices.map((v) => v.project(n).magnitude());
@@ -105,12 +118,19 @@ export class Collision
             {
                 return false;
             }
+            const currentDepth = Math.min(maxP2 - minP1, minP1 - minP2);
+
+            if (currentDepth < collisionDepth)
+            {
+                collisionDepth = currentDepth;
+                collisionNormal = n;
+            }
         }
-        const collision = new Collision(pb1, pb2, 0);
+        const collision = new Collision(pb1, pb2, collisionDepth, collisionNormal);
 
         if (outCollision !== undefined) outCollision = collision;
 
-        return new Collision(pb1, pb2, 0);
+        return collision;
     }
 
     private static testCirclePoly(cb : CircleBody, pb : PolygonBody, outCollision? : Collision) : Collision | false

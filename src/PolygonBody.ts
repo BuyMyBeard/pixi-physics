@@ -1,5 +1,5 @@
-import { Body, BodyParameters, BodyType } from './Body';
-import { ColorSource, ILineStyleOptions, Point, Rectangle } from 'pixi.js';
+import { Body, BodyParameters } from './Body';
+import { ColorSource, Point, Rectangle } from 'pixi.js';
 import { MathUtils, Segment } from './MathUtils';
 import { ObservableTransform } from './ObservableTransform';
 
@@ -82,9 +82,6 @@ export class PolygonBody extends Body
 
         return new Rectangle(corner.x, corner.y, width, height);
     }
-
-
-
 
     public get edges() : Array<Segment>
     {

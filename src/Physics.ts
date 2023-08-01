@@ -28,20 +28,22 @@ export class Physics
                 if (pair[0].onCollisionEnter !== undefined) pair[0].onCollisionEnter(collision);
                 if (pair[1].onCollisionEnter !== undefined) pair[1].onCollisionEnter(collision);
                 this.respondToCollision(pair[0], pair[1]);
-                newCollisions.push(new Collision(pair[0], pair[1], 0));
+                Physics.resolveCollision(collision);
+                newCollisions.push(collision);
             }
             else if (collision && index !== -1)
             {
                 Collision.collisionsInProgress[index] = collision;
                 if (pair[0].onCollisionStay !== undefined) pair[0].onCollisionStay(collision);
                 if (pair[1].onCollisionStay !== undefined) pair[1].onCollisionStay(collision);
-                Physics.resolveCollision(pair[0], pair[1]);
+                Physics.resolveCollision(collision);
                 Collision.collisionsInProgress.splice(index, 1);
-                newCollisions.push(new Collision(pair[0], pair[1], 0));
+                newCollisions.push(collision);
             }
         });
 
-        Collision.collisionsInProgress.forEach((collision) => {
+        Collision.collisionsInProgress.forEach((collision) =>
+        {
             if (collision.c1.onCollisionExit !== undefined) collision.c1.onCollisionExit(collision);
             if (collision.c2.onCollisionExit !== undefined) collision.c2.onCollisionExit(collision);
         });
@@ -69,25 +71,27 @@ export class Physics
         }
     }
 
-    private static resolveCollision(c1 : Body, c2 : Body)
+    private static resolveCollision(collision : Collision)
     {
-        if (c1 instanceof CircleBody && c2 instanceof CircleBody)
-        {
-            // TODO: actually resolve collision instead of pushing away bodies
-            Physics.pushAwayCircle(c1, c2);
-        }
-        else if (c1 instanceof PolygonBody && c2 instanceof PolygonBody)
-        {
-            // TODO:
-        }
-        else if (c1 instanceof PolygonBody && c2 instanceof CircleBody)
-        {
-            // TODO:
-        }
-        else if (c1 instanceof CircleBody && c2 instanceof PolygonBody)
-        {
-            // TODO:
-        }
+        collision.c1.queueResolution(collision.normal.multiplyScalar(collision.depth * 0.5));
+        collision.c2.queueResolution(collision.normal.multiplyScalar(-collision.depth * 0.5));
+        // if (collision.c1 instanceof CircleBody && collision.c2 instanceof CircleBody)
+        // {
+        //     // TODO: actually resolve collision instead of pushing away bodies
+        //     Physics.resolveCircleCircle(collision);
+        // }
+        // else if (collision.c1 instanceof PolygonBody && collision.c2 instanceof PolygonBody)
+        // {
+        //     // TODO:
+        // }
+        // else if (collision.c1 instanceof PolygonBody && collision.c2 instanceof CircleBody)
+        // {
+        //     // TODO:
+        // }
+        // else if (collision.c1 instanceof CircleBody && collision.c2 instanceof PolygonBody)
+        // {
+        //     // TODO:
+        // }
     }
 
     private static circleCircleResponse(cb1: CircleBody, cb2 : CircleBody)
@@ -142,12 +146,10 @@ export class Physics
         }
     }
 
-    private static pushAwayCircle(cb1 : CircleBody, cb2 : CircleBody)
+    private static resolveCircleCircle(collision : Collision)
     {
-        const massRatio = cb1.mass / cb2.mass;
-        const nv = cb1.position.subtract(cb2.position).normalize();
-
-        cb1.position = nv.multiplyScalar(massRatio).add(cb1.position);
-        cb2.position = nv.multiplyScalar(-1 / massRatio).add(cb2.position);
+        // const massRatio = collision.c1.mass / collision.c2.mass;
+        collision.c1.queueResolution(collision.normal.multiplyScalar(-collision.depth));
+        collision.c2.queueResolution(collision.normal.multiplyScalar(collision.depth));
     }
 }

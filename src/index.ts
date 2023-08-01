@@ -14,22 +14,23 @@ export const app = new Application({
     width: window.innerWidth,
     height: window.innerHeight,
 });
-// for (let i = 0; i < 100; i++)
-// {
-//     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
-//     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
-//     const ball = new CircleBody({
-//         position,
-//         velocity,
-//         radius: (Math.random() * 30) + 5,
-//         color: Math.random() * 16777215,
-//         // acceleration: new Point(0, 0.1),
-//     });
+for (let i = 0; i < 100; i++)
+{
+    const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
+    const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
 
-//     ball.onCollisionEnter = () => console.log('entered');
-//     ball.onCollisionStay = () => console.log('stayed');
-//     ball.onCollisionExit = () => console.log('exited');
-// }
+    new CircleBody({
+        position,
+        velocity,
+        radius: (Math.random() * 30) + 5,
+        color: Math.random() * 16777215,
+        // acceleration: new Point(0, 0.1),
+    });
+
+    // ball.onCollisionEnter = () => console.log('entered');
+    // ball.onCollisionStay = () => console.log('stayed');
+    // ball.onCollisionExit = () => console.log('exited');
+}
 // new Circle({
 // 	position: new Point(1000, 200),
 // 	velocity: new Point(2, 2),
@@ -76,28 +77,30 @@ const c = new PolygonBody(vertices, {
     },
     color: 0xAAAAAA,
 });
-const c2 = new PolygonBody(vertices, {
+const c2 = new CircleBody({
     position: new Point(100, 100),
     scale: new Point(1, 1),
     lineStyle: {
         width: 4,
         color: '0x40EE40',
     },
-    color: '0x00000000'
+    color: '0x000000'
 });
 
-    c2.onCollisionEnter = () => console.log('entered');
-    c2.onCollisionStay = () => console.log('stayed');
-    c2.onCollisionExit = () => console.log('exited');
+c2.onCollisionEnter = (c) => console.log(c);
+// c2.onCollisionStay = () => console.log('stayed');
+// c2.onCollisionExit = () => console.log('exited');
 
 const speed = 5;
+
 InputSystem.initialize();
 function updateLoop(deltaTime : number)
 {
-    Physics.update();
     Body.bodyPool.forEach((b) => b.update(deltaTime));
+    Physics.update();
+    Body.bodyPool.forEach((b) => b.lateUpdate(deltaTime));
     // c.transform.scale.set(c.transform.scale.x + deltaTime * 0.01, 1)
-    //c2.rotation += deltaTime * 0.01;
+    // c2.rotation += deltaTime * 0.01;
     // const x = c2.localTransform.apply(new Point(2, 0));
 
     // c2.position.set(x.x, x.y);
@@ -107,31 +110,39 @@ function updateLoop(deltaTime : number)
     switch (input)
     {
         case 'Left':
-            c2.x -= speed * deltaTime;
+            // c2.x -= speed * deltaTime;
+            c2.velocity.set(-speed, 0);
             break;
 
         case 'Right':
-            c2.x += speed * deltaTime;
+            // c2.x += speed * deltaTime;
+            c2.velocity.set(speed, 0);
             break;
 
         case 'Up':
-            c2.y -= speed * deltaTime;
+            // c2.y -= speed * deltaTime;
+            c2.velocity.set(0, -speed);
             break;
 
         case 'Down':
-            c2.y += speed * deltaTime;
+            // c2.y += speed * deltaTime;
+            c2.velocity.set(0, speed);
             break;
 
         case 'Attack':
-            console.log(c2.transform);
             break;
 
         case 'Interact':
             c2.rotation += 0.05 * deltaTime;
+            break;
+
+        case 'None':
+            c2.velocity.set(0, 0);
+            break;
     }
 }
 Ticker.shared.add(updateLoop);
-c2.sprite.texture = Texture.from('https://i.redd.it/a4b52sajjyr21.png');
+// c2.sprite.texture = Texture.from('https://i.redd.it/a4b52sajjyr21.png');
 c2.sprite.width = 100;
 c2.sprite.height = 100;
 c2.sprite.anchor.set(0.5, 0.5);

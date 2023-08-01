@@ -1,5 +1,6 @@
 import { IPointData, Point, Rectangle } from 'pixi.js';
 import { Body, BodyParameters, BodyType } from './Body';
+import { ObservableTransform } from './ObservableTransform';
 
 interface BallParameters extends BodyParameters
 {
@@ -57,5 +58,15 @@ export class CircleBody extends Body
     public pointInside(point : IPointData) : boolean
     {
         return this.getGlobalPosition().subtract(point).magnitude() <= this.radius;
+    }
+    public override update(deltaTime : number)
+    {
+        super.update(deltaTime);
+        if ((this.transform as ObservableTransform).changed)
+        {
+            (this.transform as ObservableTransform).reset();
+            this._boundingBox = this.updateBoundingBox();
+            this.transform.updateTransform(this.parent.transform);
+        }
     }
 }
