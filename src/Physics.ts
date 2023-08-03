@@ -73,12 +73,14 @@ export class Physics
 
     private static resolveCollision(collision : Collision)
     {
+        const extra = 0.1;
         const centroid1 = collision.c1.centroid;
         const centroid2 = collision.c2.centroid;
         const direction = Math.sign(collision.normal.dot(centroid2.subtract(centroid1)));
+        const moveDistance = collision.depth + extra;
 
-        collision.c1.queueResolution(collision.normal.multiplyScalar(-collision.depth * 0.5 * direction));
-        collision.c2.queueResolution(collision.normal.multiplyScalar(collision.depth * 0.5 * direction));
+        collision.c1.queueResolution(collision.normal.multiplyScalar(-moveDistance * 0.5 * direction));
+        collision.c2.queueResolution(collision.normal.multiplyScalar(moveDistance * 0.5 * direction));
     }
 
     private static circleCircleResponse(cb1: CircleBody, cb2 : CircleBody)

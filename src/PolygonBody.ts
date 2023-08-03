@@ -106,7 +106,7 @@ export class PolygonBody extends Body
     {
         const verticesSum = new Point(0, 0);
 
-        this.vertices.forEach((v) => verticesSum.add(v));
+        this.vertices.forEach((v) => verticesSum.set(verticesSum.x + v.x, verticesSum.y + v.y));
 
         return verticesSum.multiplyScalar(1 / this.vertices.length);
     }

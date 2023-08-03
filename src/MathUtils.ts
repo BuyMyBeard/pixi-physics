@@ -61,4 +61,17 @@ export class MathUtils
 
         return closest;
     }
+
+    static projectPolygon(vertices : Point[], normal : Point)
+    {
+        return vertices.map((v) => MathUtils.projectPoint(v, normal));
+    }
+
+    static projectPoint(point : Point, normal : Point)
+    {
+        const orientation = Math.sign(point.dot(normal));
+        const length = point.project(normal).magnitude();
+
+        return length * orientation;
+    }
 }

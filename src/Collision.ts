@@ -76,7 +76,7 @@ export class Collision
         const distance = vect.magnitude();
         const depth = cb1.radius + cb2.radius - distance;
 
-        if (depth <= 0) return false;
+        if (depth < 0) return false;
 
         const collision = new Collision(cb1, cb2, depth, vect.normalize());
 
@@ -100,16 +100,24 @@ export class Collision
 
         const normalsWithoutDuplicates : Point[] = [];
 
-        normals.forEach((n) =>
+        // only efficient if not a lot of sides and likely to be 2 AABB,
+        // benchmark to be sure because likely even less efficient this is O(n * n) while SAT is 0(n)
+        if (normalsWithoutDuplicates.length === 8)
         {
-            if (normalsWithoutDuplicates.every((o) => !n.equals(o))) normalsWithoutDuplicates.push(n);
-        });
+            normals.forEach((n) =>
+            {
+                if (normalsWithoutDuplicates.every((o) => Math.abs(n.normalize().dot(o.normalize())) !== 1))
+                {
+                    normalsWithoutDuplicates.push(n);
+                }
+            });
+            normals = normalsWithoutDuplicates;
+        }
 
-        normals = normalsWithoutDuplicates;
         for (const n of normals)
         {
-            const projectedP1 = pb1.vertices.map((v) => v.project(n).magnitude());
-            const projectedP2 = pb2.vertices.map((v) => v.project(n).magnitude());
+            const projectedP1 = MathUtils.projectPolygon(pb1.vertices, n);
+            const projectedP2 = MathUtils.projectPolygon(pb2.vertices, n);
             const minP1 = Math.min(...projectedP1);
             const maxP1 = Math.max(...projectedP1);
             const minP2 = Math.min(...projectedP2);
@@ -119,7 +127,7 @@ export class Collision
             {
                 return false;
             }
-            const currentDepth = Math.min(maxP2 - minP1, minP1 - minP2);
+            const currentDepth = Math.min(maxP2 - minP1, maxP1 - minP2);
 
             if (currentDepth < collisionDepth)
             {
@@ -157,12 +165,11 @@ export class Collision
         {
             if (normalsWithoutDuplicates.every((o) => Math.abs(n.dot(o)) !== 1)) normalsWithoutDuplicates.push(n);
         });
-
         normals = normalsWithoutDuplicates;
         for (const n of normals)
         {
-            const projectedPolygon = pb.vertices.map((v) => v.project(n).magnitude());
-            const projectedCircle = circlePos.project(n).magnitude();
+            const projectedPolygon = MathUtils.projectPolygon(pb.vertices, n);
+            const projectedCircle = MathUtils.projectPoint(circlePos, n);
             const minP1 = Math.min(...projectedPolygon);
             const maxP1 = Math.max(...projectedPolygon);
             const minP2 = projectedCircle - cb.radius;
@@ -172,7 +179,7 @@ export class Collision
             {
                 return false;
             }
-            const currentDepth = Math.min(maxP2 - minP1, minP1 - minP2);
+            const currentDepth = Math.min(maxP2 - minP1, maxP1 - minP2);
 
             if (currentDepth < collisionDepth)
             {
