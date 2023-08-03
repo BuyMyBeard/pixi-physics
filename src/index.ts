@@ -69,7 +69,7 @@ const vertices2 : Point[] = [
 // console.log(p.transform);
 // const p2 = new Polygon(vertices2);
 
-const c = new PolygonBody(vertices, {
+const c = new PolygonBody(vertices2, {
     position: new Point(500, 500),
     lineStyle: {
         width: 1,
@@ -77,7 +77,7 @@ const c = new PolygonBody(vertices, {
     },
     color: 0xAAAAAA,
 });
-const c2 = new PolygonBody(vertices2, {
+const c2 = new PolygonBody(vertices, {
     position: new Point(100, 100),
     scale: new Point(1, 1),
     lineStyle: {
