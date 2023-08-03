@@ -1,5 +1,5 @@
 import { IPointData, Point, Rectangle } from 'pixi.js';
-import { Body, BodyParameters, BodyType } from './Body';
+import { Body, BodyParameters } from './Body';
 import { ObservableTransform } from './ObservableTransform';
 
 interface BallParameters extends BodyParameters
@@ -10,7 +10,7 @@ export class CircleBody extends Body
 {
     protected _rawRadius = 50;
     protected _radius = 50;
-    
+
     public override get centroid(): Point {
         return this.getGlobalPosition();
     }
@@ -34,6 +34,7 @@ export class CircleBody extends Body
         Object.assign(this, params);
         const color = params === undefined || params.color === undefined ? 0xAA0000 : params.color;
 
+        if (params !== undefined && params.lineStyle !== undefined) this.graphics.lineStyle(params.lineStyle);
         this.graphics.beginFill(color);
         this.graphics.drawCircle(0, 0, this.radius);
         this._boundingBox = this.updateBoundingBox();

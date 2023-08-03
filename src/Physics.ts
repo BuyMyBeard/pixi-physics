@@ -79,8 +79,19 @@ export class Physics
         const direction = Math.sign(collision.normal.dot(centroid2.subtract(centroid1)));
         const moveDistance = collision.depth + extra;
 
-        collision.c1.queueResolution(collision.normal.multiplyScalar(-moveDistance * 0.5 * direction));
-        collision.c2.queueResolution(collision.normal.multiplyScalar(moveDistance * 0.5 * direction));
+        if (collision.c1.isStatic)
+        {
+            collision.c2.queueResolution(collision.normal.multiplyScalar(moveDistance * direction));
+        }
+        else if (collision.c2.isStatic)
+        {
+            collision.c1.queueResolution(collision.normal.multiplyScalar(-moveDistance * direction));
+        }
+        else
+        {
+            collision.c1.queueResolution(collision.normal.multiplyScalar(-moveDistance * 0.5 * direction));
+            collision.c2.queueResolution(collision.normal.multiplyScalar(moveDistance * 0.5 * direction));
+        }
     }
 
     private static circleCircleResponse(cb1: CircleBody, cb2 : CircleBody)
@@ -97,7 +108,7 @@ export class Physics
         const v2n = unitNormal.dot(cb2.velocity);
         const v2t = unitTangent.dot(cb2.velocity);
 
-        if (cb1.bodyType === 'Dynamic' && cb2.bodyType === 'Dynamic')
+        if (!cb1.isStatic && !cb2.isStatic)
         {
             const v1nFinal = ((v1n * (cb1.mass - cb2.mass)) + (2 * cb2.mass * v2n)) / (cb1.mass + cb2.mass);
             const v2nFinal = ((v2n * (cb2.mass - cb1.mass)) + (2 * cb1.mass * v1n)) / (cb1.mass + cb2.mass);
@@ -110,13 +121,13 @@ export class Physics
             cb1.queueResponse(v1nFinalVect.add(v1tFinalVect));
             cb2.queueResponse(v2nFinalVect.add(v2tFinalVect));
         }
-        else if (cb1.bodyType === 'Dynamic' || cb2.bodyType === 'Dynamic')
+        else
         {
             let rb : Body;
             let vn : number;
             let vt : number;
 
-            if (cb1.bodyType === 'Dynamic')
+            if (cb2.isStatic)
             {
                 rb = cb1;
                 vn = v1n;
@@ -133,12 +144,5 @@ export class Physics
 
             rb.queueResponse(vnFinalVect.add(vtFinalVect));
         }
-    }
-
-    private static resolveCircleCircle(collision : Collision)
-    {
-        // const massRatio = collision.c1.mass / collision.c2.mass;
-        collision.c1.queueResolution(collision.normal.multiplyScalar(-collision.depth));
-        collision.c2.queueResolution(collision.normal.multiplyScalar(collision.depth));
     }
 }

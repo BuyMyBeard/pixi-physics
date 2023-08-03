@@ -4,7 +4,7 @@ import '@pixi/math-extras';
 import { ObservableTransform } from './ObservableTransform';
 import { Collision } from './Collision';
 
-export type BodyType = 'Dynamic' | 'Kinematic' | 'Static';
+// export type BodyType = 'Dynamic' | 'Kinematic' | 'Static';
 
 export interface BodyParameters
 {
@@ -13,7 +13,7 @@ export interface BodyParameters
     scale? : Point;
     velocity? : Point;
     acceleration? : Point;
-    bodyType? : BodyType;
+    isStatic? : boolean;
     friction? : number;
     bounciness? : number;
     density? : number;
@@ -35,7 +35,7 @@ export abstract class Body extends Container
     public readonly density : number = 1;
     public bounciness = 1;
     public friction = 0;
-    public bodyType : BodyType = 'Dynamic';
+    public isStatic = false;
     public mass = 1;
     protected queuedResponse? : Point;
     protected queuedResolution? : Point;
@@ -127,6 +127,7 @@ export abstract class Body extends Container
     // }
     public update(deltaTime : number)
     {
+        if (this.isStatic) return;
         if (this.queuedResponse !== undefined)
         {
             this.velocity = this.queuedResponse.clone();

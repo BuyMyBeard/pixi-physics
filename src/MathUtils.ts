@@ -74,4 +74,17 @@ export class MathUtils
 
         return length * orientation;
     }
+
+    static randomBool(weightTrue = 0.5)
+    {
+        return (Math.random() < weightTrue);
+    }
+
+    static clamp(number : number, min : number, max : number)
+    {
+        if (number < min) number = min;
+        else if (number > max) number = max;
+
+        return number;
+    }
 }

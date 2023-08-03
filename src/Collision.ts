@@ -46,6 +46,7 @@ export class Collision
 
     public static test(c1 : Body, c2 : Body, outCollision? : Collision) : Collision | false
     {
+        if (c1.isStatic && c2.isStatic) return false;
         let collision : Collision | false = false;
 
         if (c1 instanceof CircleBody && c2 instanceof CircleBody)

@@ -18,13 +18,20 @@ for (let i = 0; i < 100; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
+    const isStatic = MathUtils.randomBool(0.1);
+    const lineStyle = {
+        width: 1,
+        color: isStatic ? 'red' : 'black',
+    };
 
-    new CircleBody({
+    const _ = new CircleBody({
         position,
         // velocity,
         radius: (Math.random() * 30) + 5,
         color: Math.random() * 16777215,
         // acceleration: new Point(0, 0.1),
+        lineStyle,
+        isStatic,
     });
 
     // ball.onCollisionEnter = () => console.log('entered');
