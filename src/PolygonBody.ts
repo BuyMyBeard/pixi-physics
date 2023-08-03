@@ -26,6 +26,10 @@ export class PolygonBody extends Body
         this.transform.updateTransform(this.parent.transform);
         this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
         this._boundingBox = this.updateBoundingBox();
+        // rough estimation for now
+        this.mass = this._boundingBox.width * this._boundingBox.height;
+
+
         const color : ColorSource = params === undefined || params.color === undefined ? 0xFFFFFF : params.color;
 
         if (params !== undefined && params.lineStyle !== undefined) this.graphics.lineStyle(params.lineStyle);
