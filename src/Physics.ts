@@ -10,6 +10,16 @@ import { PolygonBody } from './PolygonBody';
  */
 export class Physics
 {
+    private static collisionResponses = new Map<Body, Point>();
+
+    private static addResponse(body : Body, response : Point)
+    {
+        const currentResponse = this.collisionResponses.get(body);
+
+        if (currentResponse === undefined) this.collisionResponses.set(body, response);
+        else currentResponse.add(response);
+    }
+
     static checkForCollisions()
     {
         const listOfPairs = sweepAndPrune(Body.bodyPool);
@@ -81,8 +91,8 @@ export class Physics
             const v1tFinalVect = unitTangent.multiplyScalar(v1t - (v1t * resultingFriction));
             const v2tFinalVect = unitTangent.multiplyScalar(v2t - (v2t * resultingFriction));
 
-            collision.c1.addForce(v1nFinalVect.add(v1tFinalVect));
-            collision.c2.addForce(v2nFinalVect.add(v2tFinalVect));
+            Physics.addResponse(collision.c1, v1nFinalVect.add(v1tFinalVect));
+            Physics.addResponse(collision.c2, v2nFinalVect.add(v2tFinalVect));
         }
         else
         {
@@ -105,7 +115,7 @@ export class Physics
             const vnFinalVect = collision.normal.multiplyScalar(vn * -1 * resultingBounciness);
             const vtFinalVect = unitTangent.multiplyScalar(vt - (vt * resultingFriction));
 
-            rb.addForce(vnFinalVect.add(vtFinalVect));
+            Physics.addResponse(rb, vnFinalVect.add(vtFinalVect));
         }
     }
 
@@ -188,8 +198,9 @@ export class Physics
         {
             Physics.applyMovementToBodies(deltaTime / substeps);
             Physics.checkForCollisions();
+            Physics.collisionResponses.forEach((response, body) => body.velocity.set(response.x, response.y));
+            Physics.collisionResponses.clear();
         }
-        Body.bodyPool.forEach((body) => body.resetInpulse());
     }
 
     private static applyMovementToBodies(deltaTime : number)
@@ -197,7 +208,8 @@ export class Physics
         for (const b of Body.bodyPool)
         {
             if (b.isStatic) continue;
-            b.velocity = b.velocity.add(b.force.multiplyScalar(deltaTime));
+            b.velocity = b.velocity.add(b.force.multiplyScalar(deltaTime)).add(b.impulse);
+            b.resetInpulse();
             b.x += b.velocity.x * deltaTime;
             b.y += b.velocity.y * deltaTime;
             b.updateBoundingBox();

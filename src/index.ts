@@ -1,6 +1,5 @@
 import { Application, Ticker, Point, Texture, Container } from 'pixi.js';
 import { PolygonBody } from './PolygonBody';
-import { Body } from './Body';
 import { MathUtils } from './MathUtils';
 import { CircleBody } from './CircleBody';
 import { Physics } from './Physics';
@@ -29,7 +28,7 @@ const vertices2 : Point[] = [
     new Point(200, 400),
 ];
 
-for (let i = 0; i < 1; i++)
+for (let i = 0; i < 100; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
@@ -50,7 +49,7 @@ for (let i = 0; i < 1; i++)
     });
 }
 
-for (let i = 0; i < 10; i++)
+for (let i = 0; i < 100; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
@@ -62,7 +61,7 @@ for (let i = 0; i < 10; i++)
 
     const p = new PolygonBody(vertices, {
         position,
-        velocity,
+        //velocity,
         color: Math.random() * 16777215,
         // acceleration: new Point(0, 0.1),
         lineStyle,
@@ -104,7 +103,7 @@ const c = new PolygonBody(vertices2, {
     },
     color: 0xAAAAAA,
 });
-const c2 = new CircleBody({
+const c2 = new PolygonBody(vertices, {
     position: new Point(100, 100),
     scale: new Point(1, 1),
     lineStyle: {
@@ -126,7 +125,7 @@ const speed = 5;
 InputSystem.initialize();
 function updateLoop(deltaTime : number)
 {
-    Physics.step(deltaTime);
+    Physics.step(deltaTime, 1);
     // c.transform.scale.set(c.transform.scale.x + deltaTime * 0.01, 1)
     // c2.rotation += deltaTime * 0.01;
     // const x = c2.localTransform.apply(new Point(2, 0));
@@ -139,23 +138,23 @@ function updateLoop(deltaTime : number)
     switch (input)
     {
         case 'Left':
-            if (addEnergy) c2.addForce(new Point(-speed, 0))
+            if (addEnergy) c2.velocity.set(-speed, 0);
             else c2.x -= speed * deltaTime;
             break;
 
         case 'Right':
-            if (addEnergy) c2.addForce(new Point(speed, 0));
+            if (addEnergy) c2.velocity.set(speed, 0);
             else c2.x += speed * deltaTime;
             console.log(c2);
             break;
 
         case 'Up':
-            if (addEnergy) c2.addForce(new Point(0, -speed));
+            if (addEnergy) c2.velocity.set(0, -speed);
             else c2.y -= speed * deltaTime;
             break;
 
         case 'Down':
-            if (addEnergy) c2.addForce(new Point(0, speed));
+            if (addEnergy) c2.velocity.set(0, speed);
             else c2.y += speed * deltaTime;
             break;
 

@@ -30,7 +30,7 @@ export abstract class Body extends Container
     protected _boundingBox : Rectangle = new Rectangle();
     // public override transform : ObservableTransform;
     protected _force = new Point(0, 0);
-    protected _inpulse = new Point(0, 0);
+    protected _impulse = new Point(0, 0);
     static bodyPool : Body[] = [];
     public velocity : Point = new Point(0, 0);
     public acceleration : Point = new Point(0, 0);
@@ -76,7 +76,11 @@ export abstract class Body extends Container
 
     public get force()
     {
-        return this._force.add(this._inpulse);
+        return this._force.clone();
+    }
+    public get impulse()
+    {
+        return this._impulse.clone();
     }
 
     public abstract updateBoundingBox() : void;
@@ -134,7 +138,7 @@ export abstract class Body extends Container
     // }
     public resetInpulse()
     {
-        this._inpulse.set(0, 0);
+        this._impulse.set(0, 0);
     }
     /**
      *
@@ -143,8 +147,7 @@ export abstract class Body extends Container
      */
     public addForce(force : Point, inpulse = true)
     {
-        if (inpulse) this._inpulse.set(this._inpulse.x + force.x, this._inpulse.y + force.y);
+        if (inpulse) this._impulse.set(this._impulse.x + force.x, this._impulse.y + force.y);
         else this._force.set(this._force.x + force.x, this._force.y + force.y);
-        console.log(this._inpulse);
     }
 }
