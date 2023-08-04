@@ -139,22 +139,22 @@ function updateLoop(deltaTime : number)
     {
         case 'Left':
             // c2.x -= speed * deltaTime;
-            c2.velocity.set(-speed, 0);
+            c2.addForce(new Point(-speed, 0))
             break;
 
         case 'Right':
             // c2.x += speed * deltaTime;
-            c2.velocity.set(speed, 0);
+            c2.addForce(new Point(speed, 0));
             break;
 
         case 'Up':
             // c2.y -= speed * deltaTime;
-            c2.velocity.set(0, -speed);
+            c2.addForce(new Point(0, -speed));
             break;
 
         case 'Down':
             // c2.y += speed * deltaTime;
-            c2.velocity.set(0, speed);
+            c2.addForce(new Point(0, speed));
             break;
 
         case 'Attack':

@@ -79,7 +79,7 @@ export abstract class Body extends Container
         return this._force.add(this._inpulse);
     }
 
-    protected abstract updateBoundingBox() : Rectangle;
+    public abstract updateBoundingBox() : void;
     public abstract get centroid() : Point;
 
     public queueResponse(velocity : Point)
@@ -132,30 +132,12 @@ export abstract class Body extends Container
 
     //     return -1;
     // }
-    public update(deltaTime : number)
+    public resetInpulse()
     {
-        if (this.isStatic) return;
-        if (this.queuedResponse !== undefined)
-        {
-            this.velocity = this.queuedResponse.clone();
-            this.queuedResponse = undefined;
-        }
-        this.velocity = this.velocity.add(this.acceleration.multiplyScalar(deltaTime));
-
-        this.x += this.velocity.x * deltaTime;
-        this.y += this.velocity.y * deltaTime;
-    }
-
-    public lateUpdate(_ : number)
-    {
-        if (this.queuedResolution !== undefined)
-        {
-            this.position.set(this.x + this.queuedResolution.x, this.y + this.queuedResolution.y);
-            this.queuedResolution = undefined;
-        }
+        this._inpulse.set(0, 0);
     }
     /**
-     * 
+     *
      * @param force force added in pixels/s;
      * @param inpulse true by default, if false, force will be applied every frame
      */

@@ -25,7 +25,7 @@ export class PolygonBody extends Body
         this.transform.updateLocalTransform();
         this.transform.updateTransform(this.parent.transform);
         this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
-        this._boundingBox = this.updateBoundingBox();
+        this.updateBoundingBox();
         // rough estimation for now
         this.mass = this._boundingBox.width * this._boundingBox.height;
 
@@ -38,21 +38,9 @@ export class PolygonBody extends Body
         this.graphics.endFill();
     }
 
-    public updateVertices()
+    protected updateVertices()
     {
-        if ((this.transform as ObservableTransform).changed)
-        {
-            (this.transform as ObservableTransform).reset();
-            this.transform.updateTransform(this.parent.transform);
-            this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
-            this._boundingBox = this.updateBoundingBox();
-        }
-    }
-
-    public override update(deltaTime : number)
-    {
-        super.update(deltaTime);
-        this.updateVertices();
+        this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
     }
 
     public test(v : Point)
@@ -60,31 +48,39 @@ export class PolygonBody extends Body
         return this.collidesWithPoint(v);
     }
 
-    protected override updateBoundingBox(): Rectangle
+    public updateBoundingBox()
     {
-        const corner = this.vertices[0].clone();
-
-        for (let i = 1; i < this.vertices.length; i++)
+        if ((this.transform as ObservableTransform).changed)
         {
-            if (this.vertices[i].x < corner.x)
-            {
-                corner.x = this.vertices[i].x;
-            }
-            if (this.vertices[i].y < corner.y)
-            {
-                corner.y = this.vertices[i].y;
-            }
-        }
-        let width = 0;
-        let height = 0;
+            (this.transform as ObservableTransform).reset();
+            this.transform.updateTransform(this.parent.transform);
 
-        for (const v of this.vertices)
-        {
-            if (width < v.x - corner.x) width = v.x - corner.x;
-            if (height < v.y - corner.y) height = v.y - corner.y;
-        }
+            this.updateVertices();
 
-        return new Rectangle(corner.x, corner.y, width, height);
+            const corner = this.vertices[0].clone();
+
+            for (let i = 1; i < this.vertices.length; i++)
+            {
+                if (this.vertices[i].x < corner.x)
+                {
+                    corner.x = this.vertices[i].x;
+                }
+                if (this.vertices[i].y < corner.y)
+                {
+                    corner.y = this.vertices[i].y;
+                }
+            }
+            let width = 0;
+            let height = 0;
+
+            for (const v of this.vertices)
+            {
+                if (width < v.x - corner.x) width = v.x - corner.x;
+                if (height < v.y - corner.y) height = v.y - corner.y;
+            }
+
+            this._boundingBox = new Rectangle(corner.x, corner.y, width, height);
+        }
     }
 
     public get edges() : Array<Segment>

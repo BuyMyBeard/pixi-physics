@@ -188,6 +188,7 @@ export class Physics
         {
             Physics.applyMovementToBodies(deltaTime / substeps);
             Physics.checkForCollisions();
+            Body.bodyPool.forEach((body) => body.resetInpulse());
         }
     }
 
@@ -199,7 +200,7 @@ export class Physics
             b.velocity = b.velocity.add(b.force.multiplyScalar(deltaTime));
             b.x += b.velocity.x * deltaTime;
             b.y += b.velocity.y * deltaTime;
-            if (b instanceof PolygonBody) (b as PolygonBody).updateVertices();
+            if (b instanceof PolygonBody) (b as PolygonBody).updateBoundingBox();
         }
     }
 }
