@@ -62,7 +62,7 @@ for (let i = 0; i < 20; i++)
 
     const p = new PolygonBody(vertices, {
         position,
-        // velocity,
+        velocity,
         color: Math.random() * 16777215,
         // acceleration: new Point(0, 0.1),
         lineStyle,
@@ -133,28 +133,30 @@ function updateLoop(deltaTime : number)
 
     // c2.position.set(x.x, x.y);
 
+    const addEnergy = false;
+
     const input = InputSystem.currentInput;
 
     switch (input)
     {
         case 'Left':
-            // c2.x -= speed * deltaTime;
-            c2.addForce(new Point(-speed, 0))
+            if (addEnergy) c2.addForce(new Point(-speed, 0))
+            else c2.x -= speed * deltaTime;
             break;
 
         case 'Right':
-            // c2.x += speed * deltaTime;
-            c2.addForce(new Point(speed, 0));
+            if (addEnergy) c2.addForce(new Point(speed, 0));
+            else c2.x += speed * deltaTime;
             break;
 
         case 'Up':
-            // c2.y -= speed * deltaTime;
-            c2.addForce(new Point(0, -speed));
+            if (addEnergy) c2.addForce(new Point(0, -speed));
+            else c2.y -= speed * deltaTime;
             break;
 
         case 'Down':
-            // c2.y += speed * deltaTime;
-            c2.addForce(new Point(0, speed));
+            if (addEnergy) c2.addForce(new Point(0, speed));
+            else c2.y += speed * deltaTime;
             break;
 
         case 'Attack':
