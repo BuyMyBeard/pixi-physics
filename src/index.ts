@@ -126,9 +126,7 @@ const speed = 5;
 InputSystem.initialize();
 function updateLoop(deltaTime : number)
 {
-    Body.bodyPool.forEach((b) => b.update(deltaTime));
-    Physics.update();
-    Body.bodyPool.forEach((b) => b.lateUpdate(deltaTime));
+    Physics.step(deltaTime);
     // c.transform.scale.set(c.transform.scale.x + deltaTime * 0.01, 1)
     // c2.rotation += deltaTime * 0.01;
     // const x = c2.localTransform.apply(new Point(2, 0));

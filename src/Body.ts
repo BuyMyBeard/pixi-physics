@@ -29,6 +29,8 @@ export abstract class Body extends Container
 {
     protected _boundingBox : Rectangle = new Rectangle();
     // public override transform : ObservableTransform;
+    protected _force = new Point(0, 0);
+    protected _inpulse = new Point(0, 0);
     static bodyPool : Body[] = [];
     public velocity : Point = new Point(0, 0);
     public acceleration : Point = new Point(0, 0);
@@ -70,6 +72,11 @@ export abstract class Body extends Container
     public get boundingBox() : Rectangle
     {
         return this._boundingBox;
+    }
+
+    public get force()
+    {
+        return this._force.add(this._inpulse);
     }
 
     protected abstract updateBoundingBox() : Rectangle;
@@ -146,5 +153,15 @@ export abstract class Body extends Container
             this.position.set(this.x + this.queuedResolution.x, this.y + this.queuedResolution.y);
             this.queuedResolution = undefined;
         }
+    }
+    /**
+     * 
+     * @param force force added in pixels/s;
+     * @param inpulse true by default, if false, force will be applied every frame
+     */
+    public addForce(force : Point, inpulse = true)
+    {
+        if (inpulse) this._inpulse.add(force);
+        else this._force.add(force);
     }
 }

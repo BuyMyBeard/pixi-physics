@@ -3,16 +3,18 @@ import { Body } from './Body';
 import { CircleBody } from './CircleBody';
 import { Collision } from './Collision';
 import { sweepAndPrune } from './SAP';
+import { PolygonBody } from './PolygonBody';
 
 /**
  * Static class that manages collisions every frame between bodies
  */
 export class Physics
 {
-    static update()
+    static checkForCollisions()
     {
         const listOfPairs = sweepAndPrune(Body.bodyPool);
         const newCollisions : Collision[] = [];
+        let queuedResolutions : [Body, Point][] = [];
 
         // console.log("unoptimized", this.bodyPool.length * this.bodyPool.length);
         // console.log("reduced", listOfPairs.length);
@@ -26,8 +28,8 @@ export class Physics
             {
                 if (pair[0].onCollisionEnter !== undefined) pair[0].onCollisionEnter(collision);
                 if (pair[1].onCollisionEnter !== undefined) pair[1].onCollisionEnter(collision);
-                this.respondToCollision(collision);
-                Physics.resolveCollision(collision);
+                Physics.respondToCollision(collision);
+                queuedResolutions = [...queuedResolutions, ...Physics.resolveCollision(collision)];
                 newCollisions.push(collision);
             }
             else if (collision && index !== -1)
@@ -35,7 +37,7 @@ export class Physics
                 Collision.collisionsInProgress[index] = collision;
                 if (pair[0].onCollisionStay !== undefined) pair[0].onCollisionStay(collision);
                 if (pair[1].onCollisionStay !== undefined) pair[1].onCollisionStay(collision);
-                Physics.resolveCollision(collision);
+                queuedResolutions = [...queuedResolutions, ...Physics.resolveCollision(collision)];
                 Collision.collisionsInProgress.splice(index, 1);
                 newCollisions.push(collision);
             }
@@ -48,6 +50,12 @@ export class Physics
         });
 
         Collision.collisionsInProgress = newCollisions;
+
+        queuedResolutions.forEach(([body, resolution]) =>
+        {
+            body.x += resolution.x;
+            body.y += resolution.y;
+        });
     }
 
     private static respondToCollision(collision : Collision)
@@ -101,7 +109,7 @@ export class Physics
         }
     }
 
-    private static resolveCollision(collision : Collision)
+    private static resolveCollision(collision : Collision) : [Body, Point][]
     {
         const extra = 0.1;
         const centroid1 = collision.c1.centroid;
@@ -111,17 +119,15 @@ export class Physics
 
         if (collision.c1.isStatic)
         {
-            collision.c2.queueResolution(collision.normal.multiplyScalar(moveDistance * direction));
+            return [[collision.c2, collision.normal.multiplyScalar(moveDistance * direction)]];
         }
         else if (collision.c2.isStatic)
         {
-            collision.c1.queueResolution(collision.normal.multiplyScalar(-moveDistance * direction));
+            return [[collision.c1, collision.normal.multiplyScalar(-moveDistance * direction)]];
         }
-        else
-        {
-            collision.c1.queueResolution(collision.normal.multiplyScalar(-moveDistance * 0.5 * direction));
-            collision.c2.queueResolution(collision.normal.multiplyScalar(moveDistance * 0.5 * direction));
-        }
+
+        return [[collision.c1, collision.normal.multiplyScalar(-moveDistance * direction)],
+            [collision.c2, collision.normal.multiplyScalar(moveDistance * direction)]];
     }
 
     private static circleCircleResponse(cb1: CircleBody, cb2 : CircleBody)
@@ -173,6 +179,27 @@ export class Physics
             const vtFinalVect = unitTangent.multiplyScalar(vt - (vt * resultingFriction));
 
             rb.queueResponse(vnFinalVect.add(vtFinalVect));
+        }
+    }
+
+    public static step(deltaTime : number, substeps = 1)
+    {
+        for (let i = 0; i < substeps; i++)
+        {
+            Physics.applyMovementToBodies(deltaTime / substeps);
+            Physics.checkForCollisions();
+        }
+    }
+
+    private static applyMovementToBodies(deltaTime : number)
+    {
+        for (const b of Body.bodyPool)
+        {
+            if (b.isStatic) return;
+            b.velocity = b.velocity.add(b.force.multiplyScalar(deltaTime));
+            b.x += b.velocity.x * deltaTime;
+            b.y += b.velocity.y * deltaTime;
+            if (b instanceof PolygonBody) (b as PolygonBody).updateVertices();
         }
     }
 }
