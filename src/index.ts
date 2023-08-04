@@ -29,7 +29,7 @@ const vertices2 : Point[] = [
     new Point(200, 400),
 ];
 
-for (let i = 0; i < 50; i++)
+for (let i = 0; i < 1; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
@@ -50,7 +50,7 @@ for (let i = 0; i < 50; i++)
     });
 }
 
-for (let i = 0; i < 20; i++)
+for (let i = 0; i < 10; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
@@ -66,7 +66,7 @@ for (let i = 0; i < 20; i++)
         color: Math.random() * 16777215,
         // acceleration: new Point(0, 0.1),
         lineStyle,
-        isStatic,
+        //isStatic,
     });
 
     p.scale.set(Math.random() * 0.5 + 0.25)
@@ -104,7 +104,7 @@ const c = new PolygonBody(vertices2, {
     },
     color: 0xAAAAAA,
 });
-const c2 = new PolygonBody(vertices, {
+const c2 = new CircleBody({
     position: new Point(100, 100),
     scale: new Point(1, 1),
     lineStyle: {
@@ -132,7 +132,6 @@ function updateLoop(deltaTime : number)
     // const x = c2.localTransform.apply(new Point(2, 0));
 
     // c2.position.set(x.x, x.y);
-
     const addEnergy = false;
 
     const input = InputSystem.currentInput;
@@ -147,6 +146,7 @@ function updateLoop(deltaTime : number)
         case 'Right':
             if (addEnergy) c2.addForce(new Point(speed, 0));
             else c2.x += speed * deltaTime;
+            console.log(c2);
             break;
 
         case 'Up':

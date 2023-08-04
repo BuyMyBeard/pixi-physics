@@ -25,7 +25,7 @@ export class PolygonBody extends Body
         this.transform.updateLocalTransform();
         this.transform.updateTransform(this.parent.transform);
         this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
-        this.updateBoundingBox();
+        this.updateBoundingBox(true);
         // rough estimation for now
         this.mass = this._boundingBox.width * this._boundingBox.height;
 
@@ -48,9 +48,9 @@ export class PolygonBody extends Body
         return this.collidesWithPoint(v);
     }
 
-    public updateBoundingBox()
+    public updateBoundingBox(forceUpdate = false)
     {
-        if ((this.transform as ObservableTransform).changed)
+        if (forceUpdate || (this.transform as ObservableTransform).changed)
         {
             (this.transform as ObservableTransform).reset();
             this.transform.updateTransform(this.parent.transform);

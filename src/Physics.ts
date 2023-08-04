@@ -81,8 +81,8 @@ export class Physics
             const v1tFinalVect = unitTangent.multiplyScalar(v1t - (v1t * resultingFriction));
             const v2tFinalVect = unitTangent.multiplyScalar(v2t - (v2t * resultingFriction));
 
-            collision.c1.queueResponse(v1nFinalVect.add(v1tFinalVect));
-            collision.c2.queueResponse(v2nFinalVect.add(v2tFinalVect));
+            collision.c1.addForce(v1nFinalVect.add(v1tFinalVect));
+            collision.c2.addForce(v2nFinalVect.add(v2tFinalVect));
         }
         else
         {
@@ -105,7 +105,7 @@ export class Physics
             const vnFinalVect = collision.normal.multiplyScalar(vn * -1 * resultingBounciness);
             const vtFinalVect = unitTangent.multiplyScalar(vt - (vt * resultingFriction));
 
-            rb.queueResponse(vnFinalVect.add(vtFinalVect));
+            rb.addForce(vnFinalVect.add(vtFinalVect));
         }
     }
 
@@ -154,8 +154,8 @@ export class Physics
             const v1tFinalVect = unitTangent.multiplyScalar(v1t - (v1t * resultingFriction));
             const v2tFinalVect = unitTangent.multiplyScalar(v2t - (v2t * resultingFriction));
 
-            cb1.queueResponse(v1nFinalVect.add(v1tFinalVect));
-            cb2.queueResponse(v2nFinalVect.add(v2tFinalVect));
+            cb1.addForce(v1nFinalVect.add(v1tFinalVect));
+            cb2.addForce(v2nFinalVect.add(v2tFinalVect));
         }
         else
         {
@@ -188,19 +188,19 @@ export class Physics
         {
             Physics.applyMovementToBodies(deltaTime / substeps);
             Physics.checkForCollisions();
-            Body.bodyPool.forEach((body) => body.resetInpulse());
         }
+        Body.bodyPool.forEach((body) => body.resetInpulse());
     }
 
     private static applyMovementToBodies(deltaTime : number)
     {
         for (const b of Body.bodyPool)
         {
-            if (b.isStatic) return;
+            if (b.isStatic) continue;
             b.velocity = b.velocity.add(b.force.multiplyScalar(deltaTime));
             b.x += b.velocity.x * deltaTime;
             b.y += b.velocity.y * deltaTime;
-            if (b instanceof PolygonBody) (b as PolygonBody).updateBoundingBox();
+            b.updateBoundingBox();
         }
     }
 }

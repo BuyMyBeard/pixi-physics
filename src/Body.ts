@@ -143,7 +143,8 @@ export abstract class Body extends Container
      */
     public addForce(force : Point, inpulse = true)
     {
-        if (inpulse) this._inpulse.add(force);
-        else this._force.add(force);
+        if (inpulse) this._inpulse.set(this._inpulse.x + force.x, this._inpulse.y + force.y);
+        else this._force.set(this._force.x + force.x, this._force.y + force.y);
+        console.log(this._inpulse);
     }
 }
