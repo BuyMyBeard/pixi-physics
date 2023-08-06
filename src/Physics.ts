@@ -66,6 +66,8 @@ export class Physics
             body.x += resolution.x;
             body.y += resolution.y;
         });
+
+        Collision.collisionsInProgress.forEach((collision) => Collision.findContacts(collision));
     }
 
     private static respondToCollision(collision : Collision)
@@ -121,7 +123,7 @@ export class Physics
 
     private static resolveCollision(collision : Collision) : [Body, Point][]
     {
-        const extra = 0.1;
+        const extra = 0;
         const centroid1 = collision.c1.centroid;
         const centroid2 = collision.c2.centroid;
         const direction = Math.sign(collision.normal.dot(centroid2.subtract(centroid1)));
@@ -208,8 +210,7 @@ export class Physics
         for (const b of Body.bodyPool)
         {
             if (b.isStatic) continue;
-            b.velocity = b.velocity.add(b.force.multiplyScalar(deltaTime)).add(b.impulse);
-            b.resetInpulse();
+            b.velocity = b.velocity.add(b.force.multiplyScalar(deltaTime));
             b.x += b.velocity.x * deltaTime;
             b.y += b.velocity.y * deltaTime;
             b.updateBoundingBox();

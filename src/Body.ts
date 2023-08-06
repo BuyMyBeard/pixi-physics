@@ -12,7 +12,6 @@ export interface BodyParameters
     rotation? : number;
     scale? : Point;
     velocity? : Point;
-    acceleration? : Point;
     isStatic? : boolean;
     friction? : number;
     bounciness? : number;
@@ -124,22 +123,12 @@ export abstract class Body extends Container
 
         return arr;
     }
-    // public static collisionIndex(pair : [Body, Body]) : number
-    // {
-    //     for (let i = 0; i < Collision.collisionsInProgress.length; i++)
-    //     {
-    //         if (Collision.collisionsInProgress[i].containsColliders(pair[0], pair[1]))
-    //         {
-    //             return i;
-    //         }
-    //     }
 
-    //     return -1;
-    // }
     public resetInpulse()
     {
         this._impulse.set(0, 0);
     }
+
     /**
      *
      * @param force force added in pixels/s;

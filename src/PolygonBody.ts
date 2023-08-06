@@ -177,35 +177,4 @@ export class PolygonBody extends Body
         // if uA and uB are between 0-1, lines are colliding
         return uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1;
     }
-    private separatingAxisTheorem(polygon : PolygonBody) : boolean
-    {
-        const edges = [...this.edges, ...polygon.edges];
-        const normals = edges.map((edge) =>
-        {
-            const tangent = edge[1].subtract(edge[0]);
-
-            return new Point(-tangent.y, tangent.x);
-        });
-        // potentially less efficient overall
-        // const normalsWithoutDuplicates : Point[] = [];
-        // normals.forEach(n => {if (normalsWithoutDuplicates.every(o => !n.equals(o))) normalsWithoutDuplicates.push(n)});
-
-        for (const n of normals)
-        {
-            const projectedP1 = this.vertices.map((v) => v.project(n).magnitude());
-            const projectedP2 = polygon.vertices.map((v) => v.project(n).magnitude());
-            const minP1 = Math.min(...projectedP1);
-            const maxP1 = Math.max(...projectedP1);
-            const minP2 = Math.min(...projectedP2);
-            const maxP2 = Math.max(...projectedP2);
-
-            projectedP2.sort();
-            if (minP1 >= maxP2 || minP2 < maxP1)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
 }

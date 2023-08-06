@@ -87,4 +87,20 @@ export class MathUtils
 
         return number;
     }
+
+    static pointLineDistance(p0 : Point, [p1, p2] : Segment)
+    {
+        return Math.abs(((p2.x - p1.x) * (p1.y - p0.y)) - ((p1.x - p0.x) * (p2.y - p1.y)))
+        / Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+    }
+
+    static nearlyEqual(num1 : number, num2 : number, accuracy = 0.05)
+    {
+        return Math.abs(num2 - num1) < accuracy;
+    }
+
+    static nearlyEqualPoint(p1 : Point, p2 : Point, accuracy = 0.05)
+    {
+        return p2.subtract(p1).magnitude() < accuracy;
+    }
 }

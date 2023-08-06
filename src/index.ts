@@ -5,12 +5,13 @@ import { CircleBody } from './CircleBody';
 import { Physics } from './Physics';
 import { InputSystem } from './InputSystem';
 import { ScreenContainer } from './ScreenContainer';
+import { Debug } from './Debug';
 
 export const app = new Application({
     view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
     resolution: window.devicePixelRatio || 1,
     autoDensity: true,
-    backgroundColor: 0x222222,
+    backgroundColor: 0xFFFFFF,
     width: window.innerWidth,
     height: window.innerHeight,
 });
@@ -28,28 +29,29 @@ const vertices2 : Point[] = [
     new Point(200, 400),
 ];
 
-for (let i = 0; i < 100; i++)
-{
-    const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
-    const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
-    const isStatic = MathUtils.randomBool(0.1);
-    const lineStyle = {
-        width: 1,
-        color: isStatic ? 'red' : 'black',
-    };
+// for (let i = 0; i < 100; i++)
+// {
+//     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
+//     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
+//     const isStatic = MathUtils.randomBool(0.1);
+//     const lineStyle = {
+//         width: 1,
+//         color: isStatic ? 'red' : 'black',
+//     };
 
-    const _ = new CircleBody({
-        position,
-        // velocity,
-        radius: (Math.random() * 30) + 5,
-        color: Math.random() * 16777215,
-        // acceleration: new Point(0, 0.1),
-        lineStyle,
-        isStatic,
-    });
-}
+//     const c = new CircleBody({
+//         position,
+//         // velocity,
+//         radius: (Math.random() * 30) + 5,
+//         color: Math.random() * 16777215,
+//         lineStyle,
+//         // isStatic,
+//     });
 
-for (let i = 0; i < 100; i++)
+//     //c.addForce(new Point(0, 0.1), false);
+// }
+
+for (let i = 0; i < 10; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
@@ -61,15 +63,15 @@ for (let i = 0; i < 100; i++)
 
     const p = new PolygonBody(vertices, {
         position,
-        //velocity,
+        // velocity,
         color: Math.random() * 16777215,
-        // acceleration: new Point(0, 0.1),
         lineStyle,
         //isStatic,
     });
-
-    p.scale.set(Math.random() * 0.5 + 0.25)
 }
+// p.addForce(new Point(0, -0.1), false);
+// p.scale.set(Math.random() * 0.5 + 0.25)
+// }
 // new Circle({
 // 	position: new Point(1000, 200),
 // 	velocity: new Point(2, 2),
@@ -95,19 +97,19 @@ for (let i = 0; i < 100; i++)
 // console.log(p.transform);
 // const p2 = new Polygon(vertices2);
 
-const c = new PolygonBody(vertices2, {
-    position: new Point(500, 500),
-    lineStyle: {
-        width: 1,
-        color: 0xFFFFFF,
-    },
-    color: 0xAAAAAA,
-});
+// const c = new PolygonBody(vertices2, {
+//     position: new Point(500, 500),
+//     lineStyle: {
+//         width: 1,
+//         color: 0xFFFFFF,
+//     },
+//     color: 0xAAAAAA,
+// });
 const c2 = new PolygonBody(vertices, {
     position: new Point(100, 100),
     scale: new Point(1, 1),
     lineStyle: {
-        width: 4,
+        width: 1,
         color: '0x40EE40',
     },
     color: '0x000000'
@@ -122,16 +124,18 @@ c2.onCollisionEnter = (c) => console.log(c);
 
 const speed = 5;
 
+Debug.initialize();
 InputSystem.initialize();
 function updateLoop(deltaTime : number)
 {
-    Physics.step(deltaTime, 1);
+    Debug.reset();
+    Physics.step(deltaTime, 8);
     // c.transform.scale.set(c.transform.scale.x + deltaTime * 0.01, 1)
     // c2.rotation += deltaTime * 0.01;
     // const x = c2.localTransform.apply(new Point(2, 0));
 
     // c2.position.set(x.x, x.y);
-    const addEnergy = false;
+    const addEnergy = true;
 
     const input = InputSystem.currentInput;
 
@@ -145,7 +149,6 @@ function updateLoop(deltaTime : number)
         case 'Right':
             if (addEnergy) c2.velocity.set(speed, 0);
             else c2.x += speed * deltaTime;
-            console.log(c2);
             break;
 
         case 'Up':
