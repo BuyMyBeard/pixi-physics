@@ -25,7 +25,7 @@ export class PolygonBody extends Body
         this.transform.updateLocalTransform();
         this.transform.updateTransform(this.parent.transform);
         this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
-        this._boundingBox = this.updateBoundingBox();
+        this.updateBoundingBox(true);
         // rough estimation for now
         this.mass = this._boundingBox.width * this._boundingBox.height;
 
@@ -38,21 +38,9 @@ export class PolygonBody extends Body
         this.graphics.endFill();
     }
 
-    public updateVertices()
+    protected updateVertices()
     {
-        if ((this.transform as ObservableTransform).changed)
-        {
-            (this.transform as ObservableTransform).reset();
-            this.transform.updateTransform(this.parent.transform);
-            this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
-            this._boundingBox = this.updateBoundingBox();
-        }
-    }
-
-    public override update(deltaTime : number)
-    {
-        super.update(deltaTime);
-        this.updateVertices();
+        this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
     }
 
     public test(v : Point)
@@ -60,31 +48,39 @@ export class PolygonBody extends Body
         return this.collidesWithPoint(v);
     }
 
-    protected override updateBoundingBox(): Rectangle
+    public updateBoundingBox(forceUpdate = false)
     {
-        const corner = this.vertices[0].clone();
-
-        for (let i = 1; i < this.vertices.length; i++)
+        if (forceUpdate || (this.transform as ObservableTransform).changed)
         {
-            if (this.vertices[i].x < corner.x)
-            {
-                corner.x = this.vertices[i].x;
-            }
-            if (this.vertices[i].y < corner.y)
-            {
-                corner.y = this.vertices[i].y;
-            }
-        }
-        let width = 0;
-        let height = 0;
+            (this.transform as ObservableTransform).reset();
+            this.transform.updateTransform(this.parent.transform);
 
-        for (const v of this.vertices)
-        {
-            if (width < v.x - corner.x) width = v.x - corner.x;
-            if (height < v.y - corner.y) height = v.y - corner.y;
-        }
+            this.updateVertices();
 
-        return new Rectangle(corner.x, corner.y, width, height);
+            const corner = this.vertices[0].clone();
+
+            for (let i = 1; i < this.vertices.length; i++)
+            {
+                if (this.vertices[i].x < corner.x)
+                {
+                    corner.x = this.vertices[i].x;
+                }
+                if (this.vertices[i].y < corner.y)
+                {
+                    corner.y = this.vertices[i].y;
+                }
+            }
+            let width = 0;
+            let height = 0;
+
+            for (const v of this.vertices)
+            {
+                if (width < v.x - corner.x) width = v.x - corner.x;
+                if (height < v.y - corner.y) height = v.y - corner.y;
+            }
+
+            this._boundingBox = new Rectangle(corner.x, corner.y, width, height);
+        }
     }
 
     public get edges() : Array<Segment>
@@ -180,36 +176,5 @@ export class PolygonBody extends Body
 
         // if uA and uB are between 0-1, lines are colliding
         return uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1;
-    }
-    private separatingAxisTheorem(polygon : PolygonBody) : boolean
-    {
-        const edges = [...this.edges, ...polygon.edges];
-        const normals = edges.map((edge) =>
-        {
-            const tangent = edge[1].subtract(edge[0]);
-
-            return new Point(-tangent.y, tangent.x);
-        });
-        // potentially less efficient overall
-        // const normalsWithoutDuplicates : Point[] = [];
-        // normals.forEach(n => {if (normalsWithoutDuplicates.every(o => !n.equals(o))) normalsWithoutDuplicates.push(n)});
-
-        for (const n of normals)
-        {
-            const projectedP1 = this.vertices.map((v) => v.project(n).magnitude());
-            const projectedP2 = polygon.vertices.map((v) => v.project(n).magnitude());
-            const minP1 = Math.min(...projectedP1);
-            const maxP1 = Math.max(...projectedP1);
-            const minP2 = Math.min(...projectedP2);
-            const maxP2 = Math.max(...projectedP2);
-
-            projectedP2.sort();
-            if (minP1 >= maxP2 || minP2 < maxP1)
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

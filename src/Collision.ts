@@ -1,8 +1,10 @@
-import { Point } from 'pixi.js';
+import { Graphics, Point } from 'pixi.js';
 import { Body } from './Body';
 import { CircleBody } from './CircleBody';
 import { PolygonBody } from './PolygonBody';
-import { MathUtils } from './MathUtils';
+import { MathUtils, Segment } from './MathUtils';
+import { app } from '.';
+import { Debug } from './Debug';
 
 export class Collision
 {
@@ -11,6 +13,7 @@ export class Collision
     c1 : Body;
     c2 : Body;
     normal : Point;
+    contacts? : Point[];
 
     public constructor(c1 : Body, c2 : Body, depth : number, normal : Point)
     {
@@ -193,5 +196,91 @@ export class Collision
         if (outCollision !== undefined) outCollision = collision;
 
         return collision;
+    }
+
+    public static findContacts(collision : Collision)
+    {
+        const c1 = collision.c1;
+        const c2 = collision.c2;
+
+        if (c1 instanceof PolygonBody && c2 instanceof PolygonBody)
+        {
+            Collision.findPolyPolyContacts(collision);
+        }
+        else if (c1 instanceof CircleBody || c2 instanceof CircleBody)
+        {
+            Collision.FindCircleContact(collision);
+        }
+    }
+
+    private static FindCircleContact(collision : Collision)
+    {
+        let circle : CircleBody;
+        let other : Body;
+
+        if (collision.c1 instanceof CircleBody)
+        {
+            circle = collision.c1;
+            other = collision.c2;
+        }
+        else
+        {
+            circle = collision.c2 as CircleBody;
+            other = collision.c1;
+        }
+        const circleCenter = circle.centroid;
+        const orientation = Math.sign((collision.normal.dot(other.centroid.subtract(circleCenter))));
+        const contact = collision.normal.multiplyScalar(orientation * circle.radius).add(circleCenter);
+
+        collision.contacts = [contact];
+
+        Debug.drawPoint(contact.x, contact.y);
+    }
+
+    private static findPolyPolyContacts(collision : Collision)
+    {
+        const p1 = collision.c1 as PolygonBody;
+        const p2 = collision.c2 as PolygonBody;
+
+        let minDistance = Number.MAX_VALUE;
+        let contact1 = new Point(0, 0);
+        let contact2 : Point | false = false;
+
+        p1.vertices.forEach((v) =>
+        {
+            p2.edges.forEach((s) =>
+            {
+                const distance = MathUtils.pointLineDistance(v, s);
+
+                if (MathUtils.nearlyEqual(distance, minDistance)
+                && !MathUtils.nearlyEqualPoint(v, contact1)) contact2 = v;
+                else if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    contact1 = v;
+                }
+            });
+        });
+        p2.vertices.forEach((v) =>
+        {
+            p1.edges.forEach((s) =>
+            {
+                const distance = MathUtils.pointLineDistance(v, s);
+
+                if (MathUtils.nearlyEqual(distance, minDistance)
+                && !MathUtils.nearlyEqualPoint(v, contact1)) contact2 = v;
+                else if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    contact1 = v;
+                }
+            });
+        });
+
+        if (contact2) collision.contacts = [contact1, contact2];
+        else collision.contacts = [contact1];
+
+        collision.contacts.forEach((c) => Debug.drawPoint(c.x, c.y));
+        console.log(collision.contacts.length);
     }
 }

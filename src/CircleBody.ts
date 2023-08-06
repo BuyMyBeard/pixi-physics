@@ -37,18 +37,23 @@ export class CircleBody extends Body
         if (params !== undefined && params.lineStyle !== undefined) this.graphics.lineStyle(params.lineStyle);
         this.graphics.beginFill(color);
         this.graphics.drawCircle(0, 0, this.radius);
-        this._boundingBox = this.updateBoundingBox();
+        this.updateBoundingBox(true);
         this.updateRadius();
 
         this.mass = params === undefined || params.mass === undefined
             ? this.radius * this.radius * Math.PI * this.density : params.mass;
     }
 
-    protected updateBoundingBox()
+    public updateBoundingBox(forceUpdate = false)
     {
-        const pos = this.getGlobalPosition();
+        if (forceUpdate || (this.transform as ObservableTransform).changed)
+        {
+            (this.transform as ObservableTransform).reset();
+            this.transform.updateTransform(this.parent.transform);
+            const pos = this.getGlobalPosition();
 
-        return new Rectangle(pos.x - this.radius, pos.y - this.radius, this.radius * 2, this.radius * 2);
+            this._boundingBox = new Rectangle(pos.x - this.radius, pos.y - this.radius, this.radius * 2, this.radius * 2);
+        }
     }
 
     protected updateRadius()
@@ -62,15 +67,5 @@ export class CircleBody extends Body
     public pointInside(point : IPointData) : boolean
     {
         return this.getGlobalPosition().subtract(point).magnitude() <= this.radius;
-    }
-    public override update(deltaTime : number)
-    {
-        super.update(deltaTime);
-        if ((this.transform as ObservableTransform).changed)
-        {
-            (this.transform as ObservableTransform).reset();
-            this._boundingBox = this.updateBoundingBox();
-            this.transform.updateTransform(this.parent.transform);
-        }
     }
 }

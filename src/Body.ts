@@ -12,7 +12,6 @@ export interface BodyParameters
     rotation? : number;
     scale? : Point;
     velocity? : Point;
-    acceleration? : Point;
     isStatic? : boolean;
     friction? : number;
     bounciness? : number;
@@ -29,6 +28,8 @@ export abstract class Body extends Container
 {
     protected _boundingBox : Rectangle = new Rectangle();
     // public override transform : ObservableTransform;
+    protected _force = new Point(0, 0);
+    protected _impulse = new Point(0, 0);
     static bodyPool : Body[] = [];
     public velocity : Point = new Point(0, 0);
     public acceleration : Point = new Point(0, 0);
@@ -72,7 +73,16 @@ export abstract class Body extends Container
         return this._boundingBox;
     }
 
-    protected abstract updateBoundingBox() : Rectangle;
+    public get force()
+    {
+        return this._force.clone();
+    }
+    public get impulse()
+    {
+        return this._impulse.clone();
+    }
+
+    public abstract updateBoundingBox() : void;
     public abstract get centroid() : Point;
 
     public queueResponse(velocity : Point)
@@ -113,38 +123,20 @@ export abstract class Body extends Container
 
         return arr;
     }
-    // public static collisionIndex(pair : [Body, Body]) : number
-    // {
-    //     for (let i = 0; i < Collision.collisionsInProgress.length; i++)
-    //     {
-    //         if (Collision.collisionsInProgress[i].containsColliders(pair[0], pair[1]))
-    //         {
-    //             return i;
-    //         }
-    //     }
 
-    //     return -1;
-    // }
-    public update(deltaTime : number)
+    public resetInpulse()
     {
-        if (this.isStatic) return;
-        if (this.queuedResponse !== undefined)
-        {
-            this.velocity = this.queuedResponse.clone();
-            this.queuedResponse = undefined;
-        }
-        this.velocity = this.velocity.add(this.acceleration.multiplyScalar(deltaTime));
-
-        this.x += this.velocity.x * deltaTime;
-        this.y += this.velocity.y * deltaTime;
+        this._impulse.set(0, 0);
     }
 
-    public lateUpdate(_ : number)
+    /**
+     *
+     * @param force force added in pixels/s;
+     * @param inpulse true by default, if false, force will be applied every frame
+     */
+    public addForce(force : Point, inpulse = true)
     {
-        if (this.queuedResolution !== undefined)
-        {
-            this.position.set(this.x + this.queuedResolution.x, this.y + this.queuedResolution.y);
-            this.queuedResolution = undefined;
-        }
+        if (inpulse) this._impulse.set(this._impulse.x + force.x, this._impulse.y + force.y);
+        else this._force.set(this._force.x + force.x, this._force.y + force.y);
     }
 }

@@ -87,4 +87,27 @@ export class MathUtils
 
         return number;
     }
+
+    // https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+    static pointLineDistance(p0 : Point, [p1, p2] : Segment)
+    {
+        const p1p2 = p2.subtract(p1);
+        const segmentLength = p1p2.magnitude();
+
+        if (segmentLength === 0) return p0.subtract(p1).magnitude();
+        const t = Math.max(0, Math.min(1, p0.subtract(p1).dot(p1p2) / segmentLength));
+        const projection = p1.add(p1p2.multiplyScalar(t));
+
+        return projection.subtract(p0).magnitude();
+    }
+
+    static nearlyEqual(num1 : number, num2 : number, accuracy = 0.05)
+    {
+        return Math.abs(num2 - num1) < accuracy;
+    }
+
+    static nearlyEqualPoint(p1 : Point, p2 : Point, accuracy = 0.05)
+    {
+        return p2.subtract(p1).magnitude() < accuracy;
+    }
 }
