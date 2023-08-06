@@ -91,14 +91,41 @@ export class MathUtils
     // https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
     static pointLineDistance(p0 : Point, [p1, p2] : Segment)
     {
-        const p1p2 = p2.subtract(p1);
-        const segmentLength = p1p2.magnitude();
+        const A = p0.x - p1.x;
+        const B = p0.y - p1.y;
+        const C = p2.x - p1.x;
+        const D = p2.y - p1.y;
 
-        if (segmentLength === 0) return p0.subtract(p1).magnitude();
-        const t = Math.max(0, Math.min(1, p0.subtract(p1).dot(p1p2) / segmentLength));
-        const projection = p1.add(p1p2.multiplyScalar(t));
+        const dot = (A * C) + (B * D);
+        const lenSq = (C * C) + (D * D);
+        let param = -1;
 
-        return projection.subtract(p0).magnitude();
+        if (lenSq !== 0) // in case of 0 length line
+        { param = dot / lenSq; }
+
+        let xx : number;
+        let yy : number;
+
+        if (param < 0)
+        {
+            xx = p1.x;
+            yy = p1.y;
+        }
+        else if (param > 1)
+        {
+            xx = p2.x;
+            yy = p2.y;
+        }
+        else
+        {
+            xx = p1.x + (param * C);
+            yy = p1.y + (param * D);
+        }
+
+        const dx = p0.x - xx;
+        const dy = p0.y - yy;
+
+        return Math.sqrt((dx * dx) + (dy * dy));
     }
 
     static nearlyEqual(num1 : number, num2 : number, accuracy = 0.05)
