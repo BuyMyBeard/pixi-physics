@@ -8,6 +8,9 @@ interface BallParameters extends BodyParameters
 }
 export class CircleBody extends Body
 {
+    public override updateInertia(): void {
+        this._inertia = 0.5 * this.mass * this.radius * this.radius;
+    }
     protected _rawRadius = 50;
     protected _radius = 50;
 
@@ -38,6 +41,7 @@ export class CircleBody extends Body
         this.graphics.beginFill(color);
         this.graphics.drawCircle(0, 0, this.radius);
         this.updateBoundingBox(true);
+        this.updateInertia();
         this.updateRadius();
 
         this.mass = params === undefined || params.mass === undefined

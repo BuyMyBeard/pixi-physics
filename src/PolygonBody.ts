@@ -5,6 +5,22 @@ import { ObservableTransform } from './ObservableTransform';
 
 export class PolygonBody extends Body
 {
+    public override updateInertia(): void {
+        let topSum = 0;
+        let bottomSum = 0;
+        const verticeCount = this.vertices.length;
+
+        for (let i = 0; i < verticeCount; i++)
+        {
+            const v0 = this.vertices[i];
+            const v1 = this.vertices[(i + 1) % verticeCount];
+            const crossMagnitude = Math.abs(v1.cross(v0));
+
+            topSum += crossMagnitude * (v0.dot(v0) + v0.dot(v1) + v1.dot(v1));
+            bottomSum += crossMagnitude;
+        }
+        this._inertia = this.mass * topSum / (6 * bottomSum);
+    }
     _isConvex : boolean;
     rawVertices : Point[];
     public vertices : Point[];
@@ -26,6 +42,7 @@ export class PolygonBody extends Body
         this.transform.updateTransform(this.parent.transform);
         this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
         this.updateBoundingBox(true);
+        this.updateInertia();
         // rough estimation for now
         this.mass = this._boundingBox.width * this._boundingBox.height;
 

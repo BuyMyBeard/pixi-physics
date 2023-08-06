@@ -30,6 +30,7 @@ export abstract class Body extends Container
     // public override transform : ObservableTransform;
     protected _force = new Point(0, 0);
     protected _impulse = new Point(0, 0);
+    protected _inertia = -1;
     static bodyPool : Body[] = [];
     public velocity : Point = new Point(0, 0);
     public acceleration : Point = new Point(0, 0);
@@ -83,6 +84,7 @@ export abstract class Body extends Container
     }
 
     public abstract updateBoundingBox() : void;
+    public abstract updateInertia() : void;
     public abstract get centroid() : Point;
 
     public queueResponse(velocity : Point)
