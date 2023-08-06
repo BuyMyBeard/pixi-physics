@@ -213,6 +213,7 @@ export class Physics
             b.velocity = b.velocity.add(b.force.multiplyScalar(deltaTime));
             b.x += b.velocity.x * deltaTime;
             b.y += b.velocity.y * deltaTime;
+            b.rotation += b.angularVelocity * deltaTime;
             b.updateBoundingBox();
         }
     }

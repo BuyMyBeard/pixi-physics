@@ -33,6 +33,7 @@ export abstract class Body extends Container
     protected _inertia = -1;
     static bodyPool : Body[] = [];
     public velocity : Point = new Point(0, 0);
+    public angularVelocity = 0;
     public acceleration : Point = new Point(0, 0);
     public readonly density : number = 1;
     public bounciness = 1;

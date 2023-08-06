@@ -68,34 +68,9 @@ for (let i = 0; i < 10; i++)
         lineStyle,
         // isStatic,
     });
+
+    p.angularVelocity = 0.05;
 }
-// p.addForce(new Point(0, -0.1), false);
-// p.scale.set(Math.random() * 0.5 + 0.25)
-// }
-// new Circle({
-// 	position: new Point(1000, 200),
-// 	velocity: new Point(2, 2),
-// });
-
-// new Circle({
-// 	position: new Point(1001, 201),
-// 	velocity: new Point(-3, 4),
-// 	color: 0xAAAA00,
-// });
-// new Circle({
-// 	position: new Point(1002, 202),
-// 	velocity: new Point(3, -3),
-// 	color: 0x00AAAA,
-// });
-// new ScreenBorder(window.innerWidth, window.innerHeight, {bounciness : 1});
-
-// new Circle({position: new Point(1000, 500), radius: 50, mass: 1000})
-
-// const p = new Polygon(vertices);
-// console.log(p.transform);
-// p.rotation = 90;
-// console.log(p.transform);
-// const p2 = new Polygon(vertices2);
 
 // const c = new PolygonBody(vertices2, {
 //     position: new Point(500, 500),
@@ -129,13 +104,8 @@ InputSystem.initialize();
 function updateLoop(deltaTime : number)
 {
     Debug.reset();
-    moveBodyWithInputs(deltaTime, c2);
+    moveBodyWithInputs(deltaTime, c2, true);
     Physics.step(deltaTime, 8);
-    // c.transform.scale.set(c.transform.scale.x + deltaTime * 0.01, 1)
-    // c2.rotation += deltaTime * 0.01;
-    // const x = c2.localTransform.apply(new Point(2, 0));
-
-    // c2.position.set(x.x, x.y);
 }
 
 function moveBodyWithInputs(deltaTime : number, body : Body, addEnergy = false, speed = 5)
