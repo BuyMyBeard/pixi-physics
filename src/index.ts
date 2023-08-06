@@ -66,7 +66,7 @@ for (let i = 0; i < 10; i++)
         // velocity,
         color: Math.random() * 16777215,
         lineStyle,
-        //isStatic,
+        // isStatic,
     });
 }
 // p.addForce(new Point(0, -0.1), false);
@@ -125,6 +125,7 @@ c2.onCollisionEnter = (c) => console.log(c);
 const speed = 5;
 
 Debug.initialize();
+Debug.color = 0xFF0000;
 InputSystem.initialize();
 function updateLoop(deltaTime : number)
 {
@@ -135,7 +136,7 @@ function updateLoop(deltaTime : number)
     // const x = c2.localTransform.apply(new Point(2, 0));
 
     // c2.position.set(x.x, x.y);
-    const addEnergy = true;
+    const addEnergy = false;
 
     const input = InputSystem.currentInput;
 
@@ -182,7 +183,3 @@ c2.sprite.anchor.set(0.5, 0.5);
 c2.sortableChildren = true;
 c2.graphics.zIndex = 2;
 c2.sprite.zIndex = 1;
-const container = new Container();
-
-app.stage.addChild(container);
-container.addChild(c2);
