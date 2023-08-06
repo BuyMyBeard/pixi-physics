@@ -252,8 +252,10 @@ export class Collision
             {
                 const distance = MathUtils.pointLineDistance(v, s);
 
-                if (MathUtils.nearlyEqual(distance, minDistance)
-                && !MathUtils.nearlyEqualPoint(v, contact1)) contact2 = v;
+                if (MathUtils.nearlyEqual(distance, minDistance))
+                {
+                    if (!MathUtils.nearlyEqualPoint(v, contact1)) contact2 = v;
+                }
                 else if (distance < minDistance)
                 {
                     minDistance = distance;
@@ -267,8 +269,10 @@ export class Collision
             {
                 const distance = MathUtils.pointLineDistance(v, s);
 
-                if (MathUtils.nearlyEqual(distance, minDistance)
-                && !MathUtils.nearlyEqualPoint(v, contact1)) contact2 = v;
+                if (MathUtils.nearlyEqual(distance, minDistance))
+                {
+                    if (!MathUtils.nearlyEqualPoint(v, contact1)) contact2 = v;
+                }
                 else if (distance < minDistance)
                 {
                     minDistance = distance;
@@ -281,6 +285,6 @@ export class Collision
         else collision.contacts = [contact1];
 
         collision.contacts.forEach((c) => Debug.drawPoint(c.x, c.y));
-        console.log(collision.contacts.length);
+        console.log(minDistance);
     }
 }

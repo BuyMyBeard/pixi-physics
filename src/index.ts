@@ -16,6 +16,8 @@ export const app = new Application({
     height: window.innerHeight,
 });
 
+console.log(MathUtils.pointLineDistance(new Point(400, 400), [new Point(300, 400), new Point(500, 400)]))
+
 const vertices : Point[] = [
     new Point(-50, -50),
     new Point(50, -50),
@@ -118,7 +120,7 @@ const c2 = new PolygonBody(vertices, {
 new ScreenContainer();
 
 
-c2.onCollisionEnter = (c) => console.log(c);
+// c2.onCollisionEnter = (c) => console.log(c);
 // c2.onCollisionStay = () => console.log('stayed');
 // c2.onCollisionExit = () => console.log('exited');
 
