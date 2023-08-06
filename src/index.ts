@@ -1,7 +1,7 @@
-import { Application, Ticker, Point, Texture, Container } from 'pixi.js';
+import { Application, Ticker, Point } from 'pixi.js';
 import { PolygonBody } from './PolygonBody';
 import { MathUtils } from './MathUtils';
-import { CircleBody } from './CircleBody';
+import { Body } from './Body';
 import { Physics } from './Physics';
 import { InputSystem } from './InputSystem';
 import { ScreenContainer } from './ScreenContainer';
@@ -15,8 +15,6 @@ export const app = new Application({
     width: window.innerWidth,
     height: window.innerHeight,
 });
-
-console.log(MathUtils.pointLineDistance(new Point(400, 400), [new Point(300, 400), new Point(500, 400)]))
 
 const vertices : Point[] = [
     new Point(-50, -50),
@@ -124,55 +122,57 @@ new ScreenContainer();
 // c2.onCollisionStay = () => console.log('stayed');
 // c2.onCollisionExit = () => console.log('exited');
 
-const speed = 5;
-
 Debug.initialize();
 Debug.color = 0xFF0000;
 InputSystem.initialize();
+
 function updateLoop(deltaTime : number)
 {
     Debug.reset();
+    moveBodyWithInputs(deltaTime, c2);
     Physics.step(deltaTime, 8);
     // c.transform.scale.set(c.transform.scale.x + deltaTime * 0.01, 1)
     // c2.rotation += deltaTime * 0.01;
     // const x = c2.localTransform.apply(new Point(2, 0));
 
     // c2.position.set(x.x, x.y);
-    const addEnergy = false;
+}
 
+function moveBodyWithInputs(deltaTime : number, body : Body, addEnergy = false, speed = 5)
+{
     const input = InputSystem.currentInput;
 
     switch (input)
     {
         case 'Left':
-            if (addEnergy) c2.velocity.set(-speed, 0);
-            else c2.x -= speed * deltaTime;
+            if (addEnergy) body.velocity.set(-speed, 0);
+            else body.x -= speed * deltaTime;
             break;
 
         case 'Right':
-            if (addEnergy) c2.velocity.set(speed, 0);
-            else c2.x += speed * deltaTime;
+            if (addEnergy) body.velocity.set(speed, 0);
+            else body.x += speed * deltaTime;
             break;
 
         case 'Up':
-            if (addEnergy) c2.velocity.set(0, -speed);
-            else c2.y -= speed * deltaTime;
+            if (addEnergy) body.velocity.set(0, -speed);
+            else body.y -= speed * deltaTime;
             break;
 
         case 'Down':
-            if (addEnergy) c2.velocity.set(0, speed);
-            else c2.y += speed * deltaTime;
+            if (addEnergy) body.velocity.set(0, speed);
+            else body.y += speed * deltaTime;
             break;
 
         case 'Attack':
             break;
 
         case 'Interact':
-            c2.rotation += 0.05 * deltaTime;
+            body.rotation += 0.05 * deltaTime;
             break;
 
         case 'None':
-            c2.velocity.set(0, 0);
+            body.velocity.set(0, 0);
             break;
     }
 }

@@ -285,6 +285,5 @@ export class Collision
         else collision.contacts = [contact1];
 
         collision.contacts.forEach((c) => Debug.drawPoint(c.x, c.y));
-        console.log(minDistance);
     }
 }
