@@ -126,9 +126,14 @@ export abstract class Body extends Container
 
         return arr;
     }
-
-    public resetInpulse()
+    public applyCurrentForce(deltaTime : number)
     {
+        this.velocity.add(this._force.multiplyScalar(deltaTime));
+    }
+
+    public applyCurrentImpulse()
+    {
+        this.velocity.set(this.velocity.x + this._impulse.x, this.velocity.y + this._impulse.y);
         this._impulse.set(0, 0);
     }
 

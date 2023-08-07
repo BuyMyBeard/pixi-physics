@@ -3,23 +3,12 @@ import { Body } from './Body';
 import { CircleBody } from './CircleBody';
 import { Collision } from './Collision';
 import { sweepAndPrune } from './SAP';
-import { PolygonBody } from './PolygonBody';
 
 /**
  * Static class that manages collisions every frame between bodies
  */
 export class Physics
 {
-    private static collisionResponses = new Map<Body, Point>();
-
-    private static addResponse(body : Body, response : Point)
-    {
-        const currentResponse = this.collisionResponses.get(body);
-
-        if (currentResponse === undefined) this.collisionResponses.set(body, response);
-        else currentResponse.add(response);
-    }
-
     static checkForCollisions()
     {
         const listOfPairs = sweepAndPrune(Body.bodyPool);
@@ -92,33 +81,35 @@ export class Physics
             const v2nFinalVect = collision.normal.multiplyScalar(v2nFinal * resultingBounciness);
             const v1tFinalVect = unitTangent.multiplyScalar(v1t - (v1t * resultingFriction));
             const v2tFinalVect = unitTangent.multiplyScalar(v2t - (v2t * resultingFriction));
+            const body1Inpulse = v1nFinalVect.add(v1tFinalVect).subtract(collision.c1.velocity);
+            const body2Inpulse = v2nFinalVect.add(v2tFinalVect).subtract(collision.c2.velocity);
 
-            Physics.addResponse(collision.c1, v1nFinalVect.add(v1tFinalVect));
-            Physics.addResponse(collision.c2, v2nFinalVect.add(v2tFinalVect));
+            collision.c1.addForce(body1Inpulse);
+            collision.c2.addForce(body2Inpulse);
+
+            return;
+        }
+        let rb : Body;
+        let vn : number;
+        let vt : number;
+
+        if (collision.c2.isStatic)
+        {
+            rb = collision.c1;
+            vn = v1n;
+            vt = v1t;
         }
         else
         {
-            let rb : Body;
-            let vn : number;
-            let vt : number;
-
-            if (collision.c2.isStatic)
-            {
-                rb = collision.c1;
-                vn = v1n;
-                vt = v1t;
-            }
-            else
-            {
-                rb = collision.c2;
-                vn = v2n;
-                vt = v2t;
-            }
-            const vnFinalVect = collision.normal.multiplyScalar(vn * -1 * resultingBounciness);
-            const vtFinalVect = unitTangent.multiplyScalar(vt - (vt * resultingFriction));
-
-            Physics.addResponse(rb, vnFinalVect.add(vtFinalVect));
+            rb = collision.c2;
+            vn = v2n;
+            vt = v2t;
         }
+        const vnFinalVect = collision.normal.multiplyScalar(vn * -1 * resultingBounciness);
+        const vtFinalVect = unitTangent.multiplyScalar(vt - (vt * resultingFriction));
+        const inpulse = vnFinalVect.add(vtFinalVect).subtract(rb.velocity);
+
+        rb.addForce(inpulse);
     }
 
     private static resolveCollision(collision : Collision) : [Body, Point][]
@@ -200,8 +191,6 @@ export class Physics
         {
             Physics.applyMovementToBodies(deltaTime / substeps);
             Physics.checkForCollisions();
-            Physics.collisionResponses.forEach((response, body) => body.velocity.set(response.x, response.y));
-            Physics.collisionResponses.clear();
         }
     }
 
@@ -210,7 +199,8 @@ export class Physics
         for (const b of Body.bodyPool)
         {
             if (b.isStatic) continue;
-            b.velocity = b.velocity.add(b.force.multiplyScalar(deltaTime));
+            b.applyCurrentImpulse();
+            b.applyCurrentForce(deltaTime);
             b.x += b.velocity.x * deltaTime;
             b.y += b.velocity.y * deltaTime;
             b.rotation += b.angularVelocity * deltaTime;
