@@ -1,6 +1,5 @@
 import { Point } from 'pixi.js';
 import { Body } from './Body';
-import { CircleBody } from './CircleBody';
 import { Collision } from './Collision';
 import { sweepAndPrune } from './SAP';
 
@@ -131,58 +130,6 @@ export class Physics
 
         return [[collision.c1, collision.normal.multiplyScalar(-moveDistance * direction)],
             [collision.c2, collision.normal.multiplyScalar(moveDistance * direction)]];
-    }
-
-    private static circleCircleResponse(cb1: CircleBody, cb2 : CircleBody)
-    {
-        const c1Pos = cb1.getGlobalPosition();
-        const c2Pos = cb2.getGlobalPosition();
-        const unitNormal = c2Pos.subtract(c1Pos).normalize();
-        const unitTangent = new Point(-unitNormal.y, unitNormal.x);
-        const resultingBounciness = (cb1.bounciness + cb2.bounciness) / 2;
-        const resultingFriction = (cb1.friction + cb2.friction) / 2;
-
-        const v1n = unitNormal.dot(cb1.velocity);
-        const v1t = unitTangent.dot(cb1.velocity);
-        const v2n = unitNormal.dot(cb2.velocity);
-        const v2t = unitTangent.dot(cb2.velocity);
-
-        if (!cb1.isStatic && !cb2.isStatic)
-        {
-            const v1nFinal = ((v1n * (cb1.mass - cb2.mass)) + (2 * cb2.mass * v2n)) / (cb1.mass + cb2.mass);
-            const v2nFinal = ((v2n * (cb2.mass - cb1.mass)) + (2 * cb1.mass * v1n)) / (cb1.mass + cb2.mass);
-
-            const v1nFinalVect = unitNormal.multiplyScalar(v1nFinal * resultingBounciness);
-            const v2nFinalVect = unitNormal.multiplyScalar(v2nFinal * resultingBounciness);
-            const v1tFinalVect = unitTangent.multiplyScalar(v1t - (v1t * resultingFriction));
-            const v2tFinalVect = unitTangent.multiplyScalar(v2t - (v2t * resultingFriction));
-
-            cb1.addForce(v1nFinalVect.add(v1tFinalVect));
-            cb2.addForce(v2nFinalVect.add(v2tFinalVect));
-        }
-        else
-        {
-            let rb : Body;
-            let vn : number;
-            let vt : number;
-
-            if (cb2.isStatic)
-            {
-                rb = cb1;
-                vn = v1n;
-                vt = v1t;
-            }
-            else
-            {
-                rb = cb2;
-                vn = v2n;
-                vt = v2t;
-            }
-            const vnFinalVect = unitNormal.multiplyScalar(vn * -1 * resultingBounciness);
-            const vtFinalVect = unitTangent.multiplyScalar(vt - (vt * resultingFriction));
-
-            rb.queueResponse(vnFinalVect.add(vtFinalVect));
-        }
     }
 
     public static step(deltaTime : number, substeps = 1)
