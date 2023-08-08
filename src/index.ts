@@ -7,6 +7,7 @@ import { InputSystem } from './InputSystem';
 import { ScreenContainer } from './ScreenContainer';
 import { Debug } from './Debug';
 import { CircleBody } from './CircleBody';
+import { CapsuleBody } from './CapsuleBody';
 
 export const app = new Application({
     view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
@@ -60,6 +61,14 @@ for (let i = 0; i < 10; i++)
 
     c.addForce(new Point(0, 0.2), false);
 }
+
+new CapsuleBody(200, 100, {
+    position: new Point(100, 300),
+    lineStyle: {
+        width: 1,
+        color: "black",
+    }
+})
 
 for (let i = 0; i < 10; i++)
 {
