@@ -40,6 +40,9 @@ export class CircleBody extends Body
         if (params !== undefined && params.lineStyle !== undefined) this.graphics.lineStyle(params.lineStyle);
         this.graphics.beginFill(color);
         this.graphics.drawCircle(0, 0, this.radius);
+        this.graphics.moveTo(0, 0);
+        this.graphics.lineTo(0, this.radius);
+
         this.updateBoundingBox(true);
         this.updateInertia();
         this.updateRadius();

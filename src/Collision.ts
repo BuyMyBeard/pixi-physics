@@ -99,7 +99,7 @@ export class Collision
         {
             const tangent = edge[1].subtract(edge[0]);
 
-            return new Point(-tangent.y, tangent.x);
+            return new Point(tangent.y, -tangent.x);
         });
 
         const normalsWithoutDuplicates : Point[] = [];
@@ -139,7 +139,11 @@ export class Collision
                 collisionNormal = n;
             }
         }
-        const collision = new Collision(pb1, pb2, collisionDepth, collisionNormal.normalize());
+        const centroid1 = pb1.centroid;
+        const centroid2 = pb2.centroid;
+        const normal = collisionNormal.normalize();
+        const direction = Math.sign(normal.dot(centroid1.subtract(centroid2)));
+        const collision = new Collision(pb1, pb2, collisionDepth, normal.multiplyScalar(direction));
 
         if (outCollision !== undefined) outCollision = collision;
 
@@ -191,7 +195,12 @@ export class Collision
                 collisionNormal = n;
             }
         }
-        const collision = new Collision(cb, pb, collisionDepth, collisionNormal.normalize());
+        const centroid1 = cb.centroid;
+        const centroid2 = pb.centroid;
+        const normal = collisionNormal.normalize();
+        const direction = Math.sign(normal.dot(centroid1.subtract(centroid2)));
+
+        const collision = new Collision(cb, pb, collisionDepth, normal.multiplyScalar(direction));
 
         if (outCollision !== undefined) outCollision = collision;
 
@@ -235,6 +244,9 @@ export class Collision
         collision.contacts = [contact];
 
         Debug.drawPoint(contact.x, contact.y);
+        const normalLineEnd = contact.add(collision.normal.multiplyScalar(10));
+
+        Debug.drawLine(contact.x, contact.y, normalLineEnd.x, normalLineEnd.y);
     }
 
     private static findPolyPolyContacts(collision : Collision)
@@ -284,6 +296,14 @@ export class Collision
         if (contact2) collision.contacts = [contact1, contact2];
         else collision.contacts = [contact1];
 
-        collision.contacts.forEach((c) => Debug.drawPoint(c.x, c.y));
+        collision.contacts.forEach((c) =>
+        {
+            Debug.drawPoint(c.x, c.y);
+
+            const normalLineEnd = c.add(collision.normal.multiplyScalar(10));
+
+            Debug.drawLine(c.x, c.y, normalLineEnd.x, normalLineEnd.y);
+        })
+
     }
 }

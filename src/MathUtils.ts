@@ -1,4 +1,4 @@
-import { Point } from 'pixi.js';
+import { Circle, Point } from 'pixi.js';
 
 export type Segment = [Point, Point];
 
@@ -136,5 +136,65 @@ export class MathUtils
     static nearlyEqualPoint(p1 : Point, p2 : Point, accuracy = 0.05)
     {
         return p2.subtract(p1).magnitude() < accuracy;
+    }
+
+    static lineSegmentCircleIntersection([p0, p1] : Segment, circle : Circle) : [Point, Point] | Point | false
+    {
+        if (p1.x === p0.x)
+        {
+            const A = 1;
+            const B = -2 * circle.y;
+            const C = ((p0.x * p0.x) - (2 * circle.x * p0.x) + (circle.x * circle.x)
+                + (circle.y + circle.y) - (circle.radius * circle.radius));
+
+            const discriminant = (B * B) - (4 * A * C);
+
+            if (discriminant < 0) return false;
+            if (discriminant === 0)
+            {
+                const y = -B / (2 * A);
+
+                return new Point(p0.x, y);
+            }
+            const y1 = (-B + Math.sqrt(discriminant)) / (2 * A);
+            const y2 = (-B - Math.sqrt(discriminant)) / (2 * A);
+
+            return [new Point(p0.x, y1), new Point(p0.x, y2)];
+        }
+
+        const m = (p1.y - p0.y) / (p1.x - p0.x);
+        const b = p0.y - (m * p0.x);
+
+        const A = 1 + (m * m);
+        const B = (2 * m * (b - circle.y)) - (2 * circle.x);
+        const C = ((circle.x * circle.x) + (b * b)) - (2 * b * circle.y) + circle.y - (circle.radius * circle.radius);
+
+        const discriminant = (B * B) - (4 * A * C);
+
+        if (discriminant < 0) return false;
+        if (discriminant === 0)
+        {
+            const x = -B / (2 * A);
+            const y = (m * x) + b;
+
+            return new Point(x, y);
+        }
+        const x1 = (-B + Math.sqrt(discriminant)) / (2 * A);
+        const x2 = (-B - Math.sqrt(discriminant)) / (2 * A);
+
+        const y1 = (m * x1) + b;
+        const y2 = (m * x2) + b;
+
+        return [new Point(x1, y1), new Point(x2, y2)];
+    }
+
+    // static lineSegmentsIntersection([p0, p1] : Segment, [p2, p3] : Segment) : Point | false
+    // {
+
+    // }
+
+    static pointInsideCircle(point : Point, circle : Circle)
+    {
+        return point.subtract(new Point(circle.x, circle.y)).magnitude() <= circle.radius;
     }
 }

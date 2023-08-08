@@ -26,9 +26,9 @@ export class Physics
             {
                 if (pair[0].onCollisionEnter !== undefined) pair[0].onCollisionEnter(collision);
                 if (pair[1].onCollisionEnter !== undefined) pair[1].onCollisionEnter(collision);
-                Physics.respondToCollision(collision);
                 queuedResolutions = [...queuedResolutions, ...Physics.resolveCollision(collision)];
                 newCollisions.push(collision);
+                this.respondToCollision(collision);
             }
             else if (collision && index !== -1)
             {
@@ -55,11 +55,16 @@ export class Physics
             body.y += resolution.y;
         });
 
-        Collision.collisionsInProgress.forEach((collision) => Collision.findContacts(collision));
+        Collision.collisionsInProgress.forEach((collision) =>
+        {
+            Collision.findContacts(collision);
+            // this.respondToCollision(collision);
+        });
     }
 
     private static respondToCollision(collision : Collision)
     {
+        console.log(`body1: (${collision.c1.position.x}, ${collision.c1.position.y}), body2: (${collision.c2.position.x}, ${collision.c2.position.y}), normal:(${collision.normal.x}, ${collision.normal.y})`)
         const unitTangent = new Point(-collision.normal.y, collision.normal.x);
         const resultingBounciness = (collision.c1.bounciness + collision.c2.bounciness) / 2;
         const resultingFriction = (collision.c1.friction + collision.c2.friction) / 2;
@@ -113,23 +118,19 @@ export class Physics
 
     private static resolveCollision(collision : Collision) : [Body, Point][]
     {
-        const extra = 0;
-        const centroid1 = collision.c1.centroid;
-        const centroid2 = collision.c2.centroid;
-        const direction = Math.sign(collision.normal.dot(centroid2.subtract(centroid1)));
-        const moveDistance = collision.depth + extra;
+        const moveDistance = collision.depth;
 
         if (collision.c1.isStatic)
         {
-            return [[collision.c2, collision.normal.multiplyScalar(moveDistance * direction)]];
+            return [[collision.c2, collision.normal.multiplyScalar(-moveDistance)]];
         }
         else if (collision.c2.isStatic)
         {
-            return [[collision.c1, collision.normal.multiplyScalar(-moveDistance * direction)]];
+            return [[collision.c1, collision.normal.multiplyScalar(moveDistance)]];
         }
 
-        return [[collision.c1, collision.normal.multiplyScalar(-moveDistance * direction)],
-            [collision.c2, collision.normal.multiplyScalar(moveDistance * direction)]];
+        return [[collision.c1, collision.normal.multiplyScalar(moveDistance)],
+            [collision.c2, collision.normal.multiplyScalar(-moveDistance)]];
     }
 
     public static step(deltaTime : number, substeps = 1)
@@ -152,6 +153,16 @@ export class Physics
             b.y += b.velocity.y * deltaTime;
             b.rotation += b.angularVelocity * deltaTime;
             b.updateBoundingBox();
+        }
+    }
+
+    public static raycast(origin : Point, length = Number.POSITIVE_INFINITY, bodyList = Body.bodyPool)
+    {
+        let minDistance = length;
+
+        for (const b of bodyList)
+        {
+            minDistance = 0;
         }
     }
 }

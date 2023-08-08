@@ -1,4 +1,4 @@
-import { Application, Ticker, Point } from 'pixi.js';
+import { Application, Ticker, Point, Circle } from 'pixi.js';
 import { PolygonBody } from './PolygonBody';
 import { MathUtils } from './MathUtils';
 import { Body } from './Body';
@@ -6,6 +6,7 @@ import { Physics } from './Physics';
 import { InputSystem } from './InputSystem';
 import { ScreenContainer } from './ScreenContainer';
 import { Debug } from './Debug';
+import { CircleBody } from './CircleBody';
 
 export const app = new Application({
     view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
@@ -15,6 +16,8 @@ export const app = new Application({
     width: window.innerWidth,
     height: window.innerHeight,
 });
+
+console.log(MathUtils.lineSegmentCircleIntersection([new Point(5, 0), new Point(5, 5)], new Circle(10, 10, 1)));
 
 const vertices : Point[] = [
     new Point(-50, -50),
@@ -61,7 +64,7 @@ for (let i = 0; i < 10; i++)
         color: isStatic ? 'red' : 'black',
     };
 
-    const p = new PolygonBody(vertices, {
+    const p = new CircleBody({
         position,
         // velocity,
         color: Math.random() * 16777215,
@@ -69,7 +72,7 @@ for (let i = 0; i < 10; i++)
         // isStatic,
     });
 
-    p.angularVelocity = 0.05;
+    // p.angularVelocity = 0.05;
 }
 
 // const c = new PolygonBody(vertices2, {
@@ -80,7 +83,7 @@ for (let i = 0; i < 10; i++)
 //     },
 //     color: 0xAAAAAA,
 // });
-const c2 = new PolygonBody(vertices, {
+const c2 = new CircleBody({
     position: new Point(100, 100),
     scale: new Point(1, 1),
     lineStyle: {
@@ -104,7 +107,7 @@ InputSystem.initialize();
 function updateLoop(deltaTime : number)
 {
     Debug.reset();
-    moveBodyWithInputs(deltaTime, c2, true);
+    moveBodyWithInputs(deltaTime, c2);
     Physics.step(deltaTime, 8);
 }
 

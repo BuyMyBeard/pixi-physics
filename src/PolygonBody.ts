@@ -46,13 +46,18 @@ export class PolygonBody extends Body
         // rough estimation for now
         this.mass = this._boundingBox.width * this._boundingBox.height;
 
-
         const color : ColorSource = params === undefined || params.color === undefined ? 0xFFFFFF : params.color;
 
         if (params !== undefined && params.lineStyle !== undefined) this.graphics.lineStyle(params.lineStyle);
         this.graphics.beginFill(color);
         this.graphics.drawPolygon(this.rawVertices);
         this.graphics.endFill();
+
+        const centroid = this.transform.localTransform.applyInverse(this.centroid);
+        const edgeMiddle = this.rawVertices[1].add(this.rawVertices[2].subtract(this.rawVertices[1]).multiplyScalar(0.5));
+
+        this.graphics.moveTo(centroid.x, centroid.y);
+        this.graphics.lineTo(edgeMiddle.x, edgeMiddle.y);
     }
 
     protected updateVertices()
