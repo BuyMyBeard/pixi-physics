@@ -39,7 +39,8 @@ export abstract class Body extends Container
     public acceleration : Point = new Point(0, 0);
     public readonly density : number = 1;
     public bounciness = 1;
-    public friction = 0;
+    public staticFriction = 0.6;
+    public kineticFriction = 0.4;
     public isStatic = false;
     public mass = 1;
     protected queuedResponse? : Point;

@@ -2,6 +2,7 @@ import { Point } from 'pixi.js';
 import { Body } from './Body';
 import { Collision } from './Collision';
 import { sweepAndPrune } from './SAP';
+import { MathUtils } from './MathUtils';
 
 /**
  * Static class that manages collisions every frame between bodies
@@ -70,6 +71,8 @@ export class Physics
         const centroidB = B.centroid;
         const n = collision.normal;
 
+        const staticFriction = Math.max(A.staticFriction, B.staticFriction);
+        const kineticFriction = Math.max(A.kineticFriction, B.kineticFriction);
         const e = Math.min(A.bounciness, B.bounciness);
 
         if (collision.contacts === undefined) throw new Error('Collision contacts are undefined');
@@ -88,10 +91,10 @@ export class Physics
                 .subtract(B.velocity)
                 .subtract(angularLinearVelocityB);
 
-            if (relativeVelocity.dot(n) >= 0) continue;
+            if (relativeVelocity.dot(n) > 0) continue;
 
             const numerator = -(1 + e) * relativeVelocity.dot(n);
-            const denom1 = n.dot(n) * ((1 / A.mass) + (1 / B.mass));
+            const denom1 = ((1 / A.mass) + (1 / B.mass)) / collision.contacts.length;
             const denom2 = Math.pow(raPerp.dot(n), 2) / A.inertia;
             const denom3 = Math.pow(rbPerp.dot(n), 2) / B.inertia;
             const j = numerator / (denom1 + denom2 + denom3);
@@ -102,6 +105,28 @@ export class Physics
             B.addTorque(-rb.cross(impulse) / B.inertia);
             A.addForce(impulse.multiplyScalar(1 / A.mass));
             B.addForce(impulse.multiplyScalar(-1 / B.mass));
+
+            let tangent = relativeVelocity.subtract(n.multiplyScalar(relativeVelocity.dot(n)));
+
+            if (MathUtils.nearlyEqualPoint(tangent, new Point(0, 0))) continue;
+
+            tangent = tangent.normalize();
+
+            const numeratorT = -relativeVelocity.dot(tangent);
+            const denom1T = ((1 / A.mass) + (1 / B.mass)) / collision.contacts.length;
+            const denom2T = Math.pow(raPerp.dot(tangent), 2) / A.inertia;
+            const denom3T = Math.pow(rbPerp.dot(tangent), 2) / B.inertia;
+            const jt = numeratorT / (denom1T + denom2T + denom3T);
+
+            let frictionImpulse;
+
+            if (Math.abs(jt) <= j * staticFriction) frictionImpulse = tangent.multiplyScalar(jt);
+            else frictionImpulse = tangent.multiplyScalar(-jt * kineticFriction);
+
+            A.addTorque(-ra.cross(frictionImpulse) / A.inertia);
+            B.addTorque(rb.cross(frictionImpulse) / B.inertia);
+            A.addForce(frictionImpulse.multiplyScalar(-1 / A.mass));
+            B.addForce(frictionImpulse.multiplyScalar(1 / B.mass));
         }
     }
 
@@ -109,7 +134,7 @@ export class Physics
     {
         const unitTangent = new Point(-collision.normal.y, collision.normal.x);
         const resultingBounciness = (collision.c1.bounciness + collision.c2.bounciness) / 2;
-        const resultingFriction = (collision.c1.friction + collision.c2.friction) / 2;
+        const resultingFriction = (collision.c1.staticFriction + collision.c2.staticFriction) / 2;
 
         const v1n = collision.normal.dot(collision.c1.velocity);
         const v1t = unitTangent.dot(collision.c1.velocity);

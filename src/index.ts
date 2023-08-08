@@ -17,8 +17,6 @@ export const app = new Application({
     height: window.innerHeight,
 });
 
-console.log(MathUtils.lineSegmentCircleIntersection([new Point(5, 0), new Point(5, 5)], new Circle(10, 10, 1)));
-
 const vertices : Point[] = [
     new Point(-50, -50),
     new Point(50, -50),
@@ -39,7 +37,7 @@ const platformVertices : Point[] = [
     new Point(-100, 5),
 ];
 
-for (let i = 0; i < 20; i++)
+for (let i = 0; i < 10; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
@@ -63,7 +61,7 @@ for (let i = 0; i < 20; i++)
     c.addForce(new Point(0, 0.2), false);
 }
 
-for (let i = 0; i < 20; i++)
+for (let i = 0; i < 10; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
