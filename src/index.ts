@@ -64,11 +64,12 @@ for (let i = 0; i < 10; i++)
         color: isStatic ? 'red' : 'black',
     };
 
-    const p = new CircleBody({
+    const p = new PolygonBody(vertices, {
         position,
-        // velocity,
+        velocity,
         color: Math.random() * 16777215,
         lineStyle,
+        mass: 1,
         // isStatic,
     });
 
@@ -83,14 +84,15 @@ for (let i = 0; i < 10; i++)
 //     },
 //     color: 0xAAAAAA,
 // });
-const c2 = new CircleBody({
-    position: new Point(100, 100),
+const c2 = new PolygonBody(vertices, {
+    position: new Point(-100, -100),
     scale: new Point(1, 1),
     lineStyle: {
         width: 1,
         color: '0x40EE40',
     },
-    color: '0x000000'
+    color: '0x000000',
+    mass: 1,
 });
 
 new ScreenContainer();
@@ -107,7 +109,7 @@ InputSystem.initialize();
 function updateLoop(deltaTime : number)
 {
     Debug.reset();
-    moveBodyWithInputs(deltaTime, c2);
+    moveBodyWithInputs(deltaTime, c2, true);
     Physics.step(deltaTime, 8);
 }
 

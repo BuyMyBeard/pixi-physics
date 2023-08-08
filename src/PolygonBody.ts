@@ -6,6 +6,12 @@ import { ObservableTransform } from './ObservableTransform';
 export class PolygonBody extends Body
 {
     public override updateInertia(): void {
+        if (this.isStatic)
+        {
+            this._inertia = Number.POSITIVE_INFINITY;
+            this.mass = Number.POSITIVE_INFINITY;
+            return;
+        }
         let topSum = 0;
         let bottomSum = 0;
         const verticeCount = this.vertices.length;
@@ -43,8 +49,6 @@ export class PolygonBody extends Body
         this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
         this.updateBoundingBox(true);
         this.updateInertia();
-        // rough estimation for now
-        this.mass = this._boundingBox.width * this._boundingBox.height;
 
         const color : ColorSource = params === undefined || params.color === undefined ? 0xFFFFFF : params.color;
 

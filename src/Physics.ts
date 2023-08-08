@@ -28,7 +28,7 @@ export class Physics
                 if (pair[1].onCollisionEnter !== undefined) pair[1].onCollisionEnter(collision);
                 queuedResolutions = [...queuedResolutions, ...Physics.resolveCollision(collision)];
                 newCollisions.push(collision);
-                this.respondToCollision(collision);
+                // this.respondToCollision(collision);
             }
             else if (collision && index !== -1)
             {
@@ -58,13 +58,56 @@ export class Physics
         Collision.collisionsInProgress.forEach((collision) =>
         {
             Collision.findContacts(collision);
-            // this.respondToCollision(collision);
+            Physics.respondToCollision2(collision);
         });
+    }
+
+    private static respondToCollision2(collision : Collision)
+    {
+        const A = collision.c1;
+        const B = collision.c2;
+        const centroidA = A.centroid;
+        const centroidB = B.centroid;
+        const n = collision.normal;
+
+        const e = (A.bounciness + B.bounciness) / 2;
+
+        if (collision.contacts === undefined) throw new Error('Collision contacts are undefined');
+        for (const contact of collision.contacts)
+        {
+            const ra = contact.subtract(centroidA);
+            const rb = contact.subtract(centroidB);
+            const raPerp = new Point(-ra.y, ra.x);
+            const rbPerp = new Point(-rb.y, rb.x);
+
+            const angularLinearVelocityA = raPerp.multiplyScalar(A.angularVelocity);
+            const angularLinearVelocityB = rbPerp.multiplyScalar(B.angularVelocity);
+
+            const relativeVelocity = A.velocity
+                .add(angularLinearVelocityA)
+                .subtract(B.velocity)
+                .subtract(angularLinearVelocityB);
+
+            if (relativeVelocity.dot(n) >= 0) continue;
+
+            const numerator = -(1 + e) * relativeVelocity.dot(n);
+            const denom1 = n.dot(n) * ((1 / A.mass) + (1 / A.mass));
+            const denom2 = Math.pow(raPerp.dot(n), 2) / A.inertia;
+            const denom3 = Math.pow(rbPerp.dot(n), 2) / B.inertia;
+            const j = numerator / (denom1 + denom2 + denom3);
+
+            const impulse = n.multiplyScalar(j);
+
+            A.addForce(impulse.multiplyScalar(1 / A.mass));
+            B.addForce(impulse.multiplyScalar(-1 / B.mass));
+
+            A.addTorque(ra.cross(impulse) / A.inertia);
+            B.addTorque(-rb.cross(impulse) / B.inertia);
+        }
     }
 
     private static respondToCollision(collision : Collision)
     {
-        console.log(`body1: (${collision.c1.position.x}, ${collision.c1.position.y}), body2: (${collision.c2.position.x}, ${collision.c2.position.y}), normal:(${collision.normal.x}, ${collision.normal.y})`)
         const unitTangent = new Point(-collision.normal.y, collision.normal.x);
         const resultingBounciness = (collision.c1.bounciness + collision.c2.bounciness) / 2;
         const resultingFriction = (collision.c1.friction + collision.c2.friction) / 2;
