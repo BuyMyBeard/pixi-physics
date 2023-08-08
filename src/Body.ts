@@ -135,12 +135,10 @@ export abstract class Body extends Container
     }
     public applyCurrentForce(deltaTime : number)
     {
-        this.velocity.add(this._force.multiplyScalar(deltaTime));
+        if (this.isStatic) return;
+        this.velocity = this.velocity.add(this._force.multiplyScalar(deltaTime));
         this.angularVelocity += this._torque * deltaTime;
-    }
 
-    public applyCurrentImpulse()
-    {
         this.velocity.set(this.velocity.x + this._impulse.x, this.velocity.y + this._impulse.y);
         this._impulse.set(0, 0);
         this.angularVelocity += this._angularImpulse;
@@ -154,12 +152,14 @@ export abstract class Body extends Container
      */
     public addForce(force : Point, impulse = true)
     {
+        if (this.isStatic) return;
         if (impulse) this._impulse.set(this._impulse.x + force.x, this._impulse.y + force.y);
         else this._force.set(this._force.x + force.x, this._force.y + force.y);
     }
 
     public addTorque(force : number, impulse = true)
     {
+        if (this.isStatic) return;
         if (impulse) this._angularImpulse += force;
         else this._torque += force;
     }

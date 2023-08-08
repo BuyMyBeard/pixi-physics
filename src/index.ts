@@ -32,29 +32,38 @@ const vertices2 : Point[] = [
     new Point(200, 400),
 ];
 
-// for (let i = 0; i < 100; i++)
-// {
-//     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
-//     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
-//     const isStatic = MathUtils.randomBool(0.1);
-//     const lineStyle = {
-//         width: 1,
-//         color: isStatic ? 'red' : 'black',
-//     };
+const platformVertices : Point[] = [
+    new Point(-100, -5),
+    new Point(100, -5),
+    new Point(100, 5),
+    new Point(-100, 5),
+];
 
-//     const c = new CircleBody({
-//         position,
-//         // velocity,
-//         radius: (Math.random() * 30) + 5,
-//         color: Math.random() * 16777215,
-//         lineStyle,
-//         // isStatic,
-//     });
+for (let i = 0; i < 20; i++)
+{
+    const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
+    const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
+    const isStatic = MathUtils.randomBool(0.1);
+    const lineStyle = {
+        width: 1,
+        color: isStatic ? 'red' : 'black',
+    };
 
-//     //c.addForce(new Point(0, 0.1), false);
-// }
+    const c = new CircleBody({
+        position,
+        // velocity,
+        radius: (Math.random() * 30) + 5,
+        color: Math.random() * 16777215,
+        lineStyle,
+        // isStatic,
+        mass: 1,
+        bounciness: 0.1,
+    });
 
-for (let i = 0; i < 10; i++)
+    c.addForce(new Point(0, 0.2), false);
+}
+
+for (let i = 0; i < 20; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
@@ -70,9 +79,11 @@ for (let i = 0; i < 10; i++)
         color: Math.random() * 16777215,
         lineStyle,
         mass: 1,
+        bounciness: 0.1,
         // isStatic,
     });
 
+    p.addForce(new Point(0, 0.2), false);
     // p.angularVelocity = 0.05;
 }
 
@@ -97,6 +108,21 @@ const c2 = new PolygonBody(vertices, {
 
 new ScreenContainer();
 
+const platform1 = new PolygonBody(platformVertices, {
+    position: new Point(300, 200),
+    isStatic: true,
+    color: 'black',
+    rotation: Math.PI / 6,
+    scale: new Point(4, 1),
+});
+
+const platform2 = new PolygonBody(platformVertices, {
+    position: new Point(1000, 500),
+    isStatic: true,
+    color: 'black',
+    rotation: -Math.PI / 6,
+    scale: new Point(4, 1),
+});
 
 // c2.onCollisionEnter = (c) => console.log(c);
 // c2.onCollisionStay = () => console.log('stayed');

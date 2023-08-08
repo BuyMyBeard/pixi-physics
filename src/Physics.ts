@@ -70,7 +70,7 @@ export class Physics
         const centroidB = B.centroid;
         const n = collision.normal;
 
-        const e = (A.bounciness + B.bounciness) / 2;
+        const e = Math.min(A.bounciness, B.bounciness);
 
         if (collision.contacts === undefined) throw new Error('Collision contacts are undefined');
         for (const contact of collision.contacts)
@@ -91,18 +91,17 @@ export class Physics
             if (relativeVelocity.dot(n) >= 0) continue;
 
             const numerator = -(1 + e) * relativeVelocity.dot(n);
-            const denom1 = n.dot(n) * ((1 / A.mass) + (1 / A.mass));
+            const denom1 = n.dot(n) * ((1 / A.mass) + (1 / B.mass));
             const denom2 = Math.pow(raPerp.dot(n), 2) / A.inertia;
             const denom3 = Math.pow(rbPerp.dot(n), 2) / B.inertia;
             const j = numerator / (denom1 + denom2 + denom3);
 
             const impulse = n.multiplyScalar(j);
 
-            A.addForce(impulse.multiplyScalar(1 / A.mass));
-            B.addForce(impulse.multiplyScalar(-1 / B.mass));
-
             A.addTorque(ra.cross(impulse) / A.inertia);
             B.addTorque(-rb.cross(impulse) / B.inertia);
+            A.addForce(impulse.multiplyScalar(1 / A.mass));
+            B.addForce(impulse.multiplyScalar(-1 / B.mass));
         }
     }
 
@@ -190,7 +189,6 @@ export class Physics
         for (const b of Body.bodyPool)
         {
             if (b.isStatic) continue;
-            b.applyCurrentImpulse();
             b.applyCurrentForce(deltaTime);
             b.x += b.velocity.x * deltaTime;
             b.y += b.velocity.y * deltaTime;

@@ -12,20 +12,23 @@ export class PolygonBody extends Body
             this.mass = Number.POSITIVE_INFINITY;
             return;
         }
-        let topSum = 0;
-        let bottomSum = 0;
-        const verticeCount = this.vertices.length;
+        this._inertia = 1 / 12 * this.mass * ((this.boundingBox.width * this.boundingBox.width)
+            + (this.boundingBox.height * this.boundingBox.height));
 
-        for (let i = 0; i < verticeCount; i++)
-        {
-            const v0 = this.vertices[i];
-            const v1 = this.vertices[(i + 1) % verticeCount];
-            const crossMagnitude = Math.abs(v1.cross(v0));
+        // let topSum = 0;
+        // let bottomSum = 0;
+        // const verticeCount = this.vertices.length;
 
-            topSum += crossMagnitude * (v0.dot(v0) + v0.dot(v1) + v1.dot(v1));
-            bottomSum += crossMagnitude;
-        }
-        this._inertia = this.mass * topSum / (6 * bottomSum);
+        // for (let i = 0; i < verticeCount; i++)
+        // {
+        //     const v0 = this.vertices[i];
+        //     const v1 = this.vertices[(i + 1) % verticeCount];
+        //     const crossMagnitude = Math.abs(v1.cross(v0));
+
+        //     topSum += crossMagnitude * (v0.dot(v0) + v0.dot(v1) + v1.dot(v1));
+        //     bottomSum += crossMagnitude;
+        // }
+        // this._inertia = this.mass * topSum / (6 * bottomSum);
     }
     _isConvex : boolean;
     rawVertices : Point[];
@@ -49,7 +52,6 @@ export class PolygonBody extends Body
         this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
         this.updateBoundingBox(true);
         this.updateInertia();
-
         const color : ColorSource = params === undefined || params.color === undefined ? 0xFFFFFF : params.color;
 
         if (params !== undefined && params.lineStyle !== undefined) this.graphics.lineStyle(params.lineStyle);
