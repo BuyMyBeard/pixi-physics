@@ -62,13 +62,13 @@ for (let i = 0; i < 10; i++)
     c.addForce(new Point(0, 0.2), false);
 }
 
-new CapsuleBody(200, 100, {
-    position: new Point(100, 300),
-    lineStyle: {
-        width: 1,
-        color: "black",
-    }
-})
+// new CapsuleBody(200, 100, {
+//     position: new Point(100, 300),
+//     lineStyle: {
+//         width: 1,
+//         color: "black",
+//     }
+// })
 
 for (let i = 0; i < 10; i++)
 {

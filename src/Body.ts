@@ -33,6 +33,9 @@ export abstract class Body extends Container
     protected _torque = 0;
     protected _angularImpulse = 0;
     protected _inertia = -1;
+    public lockRotation = false;
+    public lockX = false;
+    public lockY = false;
     static bodyPool : Body[] = [];
     public velocity : Point = new Point(0, 0);
     public angularVelocity = 0;
@@ -137,12 +140,18 @@ export abstract class Body extends Container
     public applyCurrentForce(deltaTime : number)
     {
         if (this.isStatic) return;
-        this.velocity = this.velocity.add(this._force.multiplyScalar(deltaTime));
-        this.angularVelocity += this._torque * deltaTime;
+        const appliedForce = new Point(this.lockX ? 0 : this._force.x, this.lockY ? 0 : this._force.y);
+        const appliedImpulse = new Point(this.lockX ? 0 : this._impulse.x, this.lockY ? 0 : this._impulse.y);
 
-        this.velocity.set(this.velocity.x + this._impulse.x, this.velocity.y + this._impulse.y);
+        this.velocity = this.velocity.add(appliedForce.multiplyScalar(deltaTime));
+        this.velocity.set(this.velocity.x + appliedImpulse.x, this.velocity.y + appliedImpulse.y);
+
+        if (!this.lockRotation)
+        {
+            this.angularVelocity += this._torque * deltaTime;
+            this.angularVelocity += this._angularImpulse;
+        }
         this._impulse.set(0, 0);
-        this.angularVelocity += this._angularImpulse;
         this._angularImpulse = 0;
     }
 
