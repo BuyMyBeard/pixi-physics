@@ -23,7 +23,6 @@ There are also a few things I'm unhappy about, like those engines not being main
 - Stacking stability tuning M
 - Raycast M
 - Documentation M
-- Layer system S
 - Body Factory S
 - Capsule bodies S
 - Concave polygons C
@@ -45,3 +44,4 @@ There are also a few things I'm unhappy about, like those engines not being main
 - onCollisionEnter, onCollisionStay, onCollisionExit events
 - Static bodies
 - lockX, lockY, lockRotation
+- Layer system
