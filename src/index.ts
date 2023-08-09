@@ -18,6 +18,8 @@ export const app = new Application({
     height: window.innerHeight,
 });
 
+console.log(MathUtils.lineSegmentCircleIntersection([new Point(1, 1), new Point(1, 6)], new Circle(10, 10, 1)));
+
 const vertices : Point[] = [
     new Point(-50, -50),
     new Point(50, -50),
@@ -143,7 +145,7 @@ function updateLoop(deltaTime : number)
 {
     Debug.reset();
     moveBodyWithInputs(deltaTime, c2, true);
-    Physics.step(deltaTime, 8);
+    Physics.step(deltaTime);
 }
 
 function moveBodyWithInputs(deltaTime : number, body : Body, addEnergy = false, speed = 5)

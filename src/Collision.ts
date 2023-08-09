@@ -6,21 +6,64 @@ import { MathUtils, Segment } from './MathUtils';
 import { app } from '.';
 import { Debug } from './Debug';
 
+/**
+ * Instance of collision containing collision information
+ */
 export class Collision
 {
     static collisionsInProgress : Collision[] = [];
+    /**
+     * Collision depth
+     */
     depth : number;
+    /**
+    * Body 1 involved in collision
+    */
     c1 : Body;
+    /**
+     * Body 2 involved in collision
+     */
     c2 : Body;
+    /**
+     * Collision normal, pointing towards body 1
+     */
     normal : Point;
-    contacts? : Point[];
+    /**
+     * Contact points of collision
+     */
+    contacts : Point[] = [];
+    /**
+     * Defines if collision is trigger only
+     */
+    isTrigger : boolean;
 
-    public constructor(c1 : Body, c2 : Body, depth : number, normal : Point)
+    /**
+     *
+     * @param c1 First body
+     * @param c2 Second body
+     * @param depth Depth of collision
+     * @param normal Collision normal, pointing towards first body
+     * @param isTrigger If false, collision will not apply physics to bodies. By default false.
+     */
+    public constructor(c1 : Body, c2 : Body, depth : number, normal : Point, isTrigger = false)
     {
         this.c1 = c1;
         this.c2 = c2;
         this.depth = depth;
         this.normal = normal;
+        this.isTrigger = isTrigger;
+    }
+
+    /**
+     * Get the other body involved in this collision
+     * @param thisBody Current body in context
+     * @returns Other body involved in this collision
+     */
+    public other(thisBody : Body)
+    {
+        if (this.c1 === thisBody) return this.c2;
+
+        return this.c1;
     }
 
     public equals(collision : Collision)
@@ -79,10 +122,11 @@ export class Collision
         const vect = cb1.getGlobalPosition().subtract(cb2.getGlobalPosition());
         const distance = vect.magnitude();
         const depth = cb1.radius + cb2.radius - distance;
+        const isTrigger = cb1.isTrigger || cb2.isTrigger;
 
         if (depth < 0) return false;
 
-        const collision = new Collision(cb1, cb2, depth, vect.normalize());
+        const collision = new Collision(cb1, cb2, depth, vect.normalize(), isTrigger);
 
         if (outCollision !== undefined) outCollision = collision;
 
@@ -143,7 +187,9 @@ export class Collision
         const centroid2 = pb2.centroid;
         const normal = collisionNormal.normalize();
         const direction = Math.sign(normal.dot(centroid1.subtract(centroid2)));
-        const collision = new Collision(pb1, pb2, collisionDepth, normal.multiplyScalar(direction));
+        const isTrigger = pb1.isTrigger || pb2.isTrigger;
+
+        const collision = new Collision(pb1, pb2, collisionDepth, normal.multiplyScalar(direction), isTrigger);
 
         if (outCollision !== undefined) outCollision = collision;
 
@@ -199,8 +245,9 @@ export class Collision
         const centroid2 = pb.centroid;
         const normal = collisionNormal.normalize();
         const direction = Math.sign(normal.dot(centroid1.subtract(centroid2)));
+        const isTrigger = cb.isTrigger || pb.isTrigger;
 
-        const collision = new Collision(cb, pb, collisionDepth, normal.multiplyScalar(direction));
+        const collision = new Collision(cb, pb, collisionDepth, normal.multiplyScalar(direction), isTrigger);
 
         if (outCollision !== undefined) outCollision = collision;
 

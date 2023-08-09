@@ -9,17 +9,20 @@ import { MathUtils } from './MathUtils';
  */
 export class Physics
 {
+    /**
+     * Applies a broad phase algorithm to the body pool,
+     * and checks for each pair in the narrow phase if the bodies intersect.
+     * If they intersect, calls collision events, resolves bodies overlaps and adds
+     * physics responses to bodies.
+     */
     static checkForCollisions()
     {
         const listOfPairs = sweepAndPrune(Body.bodyPool);
         const newCollisions : Collision[] = [];
         let queuedResolutions : [Body, Point][] = [];
 
-        // console.log("unoptimized", this.bodyPool.length * this.bodyPool.length);
-        // console.log("reduced", listOfPairs.length);
         listOfPairs.forEach((pair) =>
         {
-            // this.getPairArray().forEach((pair) => {
             const index = Collision.collisionIndex(pair);
             const collision = Collision.test(pair[0], pair[1]);
 
@@ -27,16 +30,15 @@ export class Physics
             {
                 if (pair[0].onCollisionEnter !== undefined) pair[0].onCollisionEnter(collision);
                 if (pair[1].onCollisionEnter !== undefined) pair[1].onCollisionEnter(collision);
-                queuedResolutions = [...queuedResolutions, ...Physics.resolveCollision(collision)];
+                if (!collision.isTrigger) queuedResolutions = [...queuedResolutions, ...Physics.resolveCollision(collision)];
                 newCollisions.push(collision);
-                // this.respondToCollision(collision);
             }
             else if (collision && index !== -1)
             {
                 Collision.collisionsInProgress[index] = collision;
                 if (pair[0].onCollisionStay !== undefined) pair[0].onCollisionStay(collision);
                 if (pair[1].onCollisionStay !== undefined) pair[1].onCollisionStay(collision);
-                queuedResolutions = [...queuedResolutions, ...Physics.resolveCollision(collision)];
+                if (!collision.isTrigger) queuedResolutions = [...queuedResolutions, ...Physics.resolveCollision(collision)];
                 Collision.collisionsInProgress.splice(index, 1);
                 newCollisions.push(collision);
             }
@@ -58,11 +60,17 @@ export class Physics
 
         Collision.collisionsInProgress.forEach((collision) =>
         {
+            // TODO: test with isTrigger
             Collision.findContacts(collision);
-            Physics.respondToCollision(collision);
+            if (!collision.isTrigger) Physics.respondToCollision(collision);
         });
     }
-
+    /**
+     * Adds linear and angular impulses to bodies to respond to collisions.
+     * Follows the implementation suggested in the article "Physics, Part 3: Collision Response",
+     * found here: http://www.chrishecker.com/Rigid_Body_Dynamics
+     * @param collision
+     */
     private static respondToCollision(collision : Collision)
     {
         const A = collision.c1;
@@ -75,7 +83,6 @@ export class Physics
         const kineticFriction = Math.max(A.kineticFriction, B.kineticFriction);
         const e = Math.min(A.bounciness, B.bounciness);
 
-        if (collision.contacts === undefined) throw new Error('Collision contacts are undefined');
         for (const contact of collision.contacts)
         {
             const ra = contact.subtract(centroidA);
@@ -130,27 +137,74 @@ export class Physics
         }
     }
 
+    /**
+     * Finds resolutions to applied to bodies to push them outside each other
+     * @param collision Collision information
+     * @returns Tuple array of resolutions to be applied to bodies
+     */
     private static resolveCollision(collision : Collision) : [Body, Point][]
     {
+        const body1 = collision.c1;
+        const body2 = collision.c2;
+
         const slop = 0.5;
 
         const moveDistance = collision.depth;
         const bias = Math.max(moveDistance - slop, 0);
 
-        if (collision.c1.isStatic)
+        if (body1.isStatic)
         {
-            return [[collision.c2, collision.normal.multiplyScalar(-bias)]];
+            return [[body2, collision.normal.multiplyScalar(-bias)]];
         }
-        else if (collision.c2.isStatic)
+        else if (body2.isStatic)
         {
-            return [[collision.c1, collision.normal.multiplyScalar(bias)]];
+            return [[body1, collision.normal.multiplyScalar(bias)]];
+        }
+        const resolution1 = collision.normal.multiplyScalar(bias / 2);
+        const resolution2 = collision.normal.multiplyScalar(-bias / 2);
+
+        if (body1.lockX && body2.lockX)
+        {
+            resolution1.x = 0;
+            resolution2.x = 0;
+        }
+        else if (body1.lockX)
+        {
+            resolution1.x = 0;
+            resolution2.x *= 2;
+        }
+        else if (body2.lockX)
+        {
+            resolution1.x *= 2;
+            resolution2.x = 0;
+        }
+        if (body1.lockY && body2.lockY)
+        {
+            resolution1.y = 0;
+            resolution2.y = 0;
+        }
+        else if (body1.lockY)
+        {
+            resolution1.y = 0;
+            resolution2.y *= 2;
+        }
+        else if (body2.lockY)
+        {
+            resolution1.y *= 2;
+            resolution2.y = 0;
         }
 
-        return [[collision.c1, collision.normal.multiplyScalar(bias / 2)],
-            [collision.c2, collision.normal.multiplyScalar(-bias / 2)]];
+        return [[body1, resolution1],
+            [body2, resolution2]];
     }
 
-    public static step(deltaTime : number, substeps = 1)
+    /**
+     * To call every frame in your update loop after applying movement and forces to bodies manually
+     * @param deltaTime Timespan from last frame to this frame
+     * @param substeps Defines how accurate the physics engine is, by default 8.
+     * Raise value for more accurate physics with faster bodies, and lower it for performance increase
+     */
+    public static step(deltaTime : number, substeps = 8)
     {
         for (let i = 0; i < substeps; i++)
         {
@@ -159,6 +213,10 @@ export class Physics
         }
     }
 
+    /**
+     * Applies all linear and angular velocities, forces and impulses to bodies
+     * @param deltaTime Timespan from last substep to this substep
+     */
     private static applyMovementToBodies(deltaTime : number)
     {
         for (const b of Body.bodyPool)

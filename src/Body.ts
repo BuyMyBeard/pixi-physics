@@ -1,4 +1,4 @@
-import { Graphics, Point, Container, Sprite, ColorSource, ILineStyleOptions, Rectangle } from 'pixi.js';
+import { Graphics, Point, Container, Sprite, ColorSource, ILineStyleOptions, Rectangle, IDestroyOptions } from 'pixi.js';
 import { app } from '.';
 import '@pixi/math-extras';
 import { ObservableTransform } from './ObservableTransform';
@@ -33,13 +33,32 @@ export abstract class Body extends Container
     protected _torque = 0;
     protected _angularImpulse = 0;
     protected _inertia = -1;
+
+    /**
+     * If set to true, prevents physics from modifying the rotation of this body
+     */
     public lockRotation = false;
+    /**
+     * If set to true, prevents physics from modifying the x value of this body
+     */
     public lockX = false;
+    /**
+     * If set to true, prevents physics from modifying the y value of this body
+     */
     public lockY = false;
-    static bodyPool : Body[] = [];
+    /**
+     * Pool of bodies currently in use. Any Body instance will add itself automatically to the pool.
+     * Please do not modify this array unless you know what you're doing.
+     */
+    static readonly bodyPool : Body[] = [];
+    /**
+     * Current linear velocity of body, in units / s
+     */
     public velocity : Point = new Point(0, 0);
+    /**
+     * Current angular velocity of body, in radians / s
+     */
     public angularVelocity = 0;
-    public acceleration : Point = new Point(0, 0);
     public readonly density : number = 1;
     public bounciness = 1;
     public staticFriction = 0.6;
@@ -50,6 +69,11 @@ export abstract class Body extends Container
     protected queuedResolution? : Point;
     public graphics = new Graphics();
     public sprite = new Sprite();
+    /**
+     * If set to true, collision with other bodies will not apply physics but will call
+     * OnCollisionEnter, OnCollisionStay, and OnCollisionExit
+     */
+    public isTrigger = false;
     /**
      * Called when this body enters collision with another body
      */
@@ -172,5 +196,25 @@ export abstract class Body extends Container
         if (this.isStatic) return;
         if (impulse) this._angularImpulse += force;
         else this._torque += force;
+    }
+
+    /**
+     * Removes all internal references and listeners as well as removes children from the display list.
+     * Do not use a Container after calling `destroy`.
+     * @param options - Options parameter. A boolean will act as if all options
+     *  have been set to that value
+     * @param {boolean} [options.children=false] - if set to true, all the children will have their destroy
+     *  method called as well. 'options' will be passed on to those calls.
+     * @param {boolean} [options.texture=false] - Only used for child Sprites if options.children is set to true
+     *  Should it destroy the texture of the child sprite
+     * @param {boolean} [options.baseTexture=false] - Only used for child Sprites if options.children is set to true
+     *  Should it destroy the base texture of the child sprite
+     */
+    public override destroy(options?: boolean | IDestroyOptions | undefined): void
+    {
+        super.destroy(options);
+        const index = Body.bodyPool.findIndex((b) => b === this);
+
+        Body.bodyPool.splice(index, 1);
     }
 }
