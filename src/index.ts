@@ -70,7 +70,7 @@ for (let i = 0; i < 10; i++)
 //     }
 // })
 
-for (let i = 0; i < 10; i++)
+for (let i = 0; i < 50; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);

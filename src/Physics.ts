@@ -132,19 +132,22 @@ export class Physics
 
     private static resolveCollision(collision : Collision) : [Body, Point][]
     {
+        const slop = 0.5;
+
         const moveDistance = collision.depth;
+        const bias = Math.max(moveDistance - slop, 0);
 
         if (collision.c1.isStatic)
         {
-            return [[collision.c2, collision.normal.multiplyScalar(-moveDistance)]];
+            return [[collision.c2, collision.normal.multiplyScalar(-bias)]];
         }
         else if (collision.c2.isStatic)
         {
-            return [[collision.c1, collision.normal.multiplyScalar(moveDistance)]];
+            return [[collision.c1, collision.normal.multiplyScalar(bias)]];
         }
 
-        return [[collision.c1, collision.normal.multiplyScalar(moveDistance / 2)],
-            [collision.c2, collision.normal.multiplyScalar(-moveDistance / 2)]];
+        return [[collision.c1, collision.normal.multiplyScalar(bias / 2)],
+            [collision.c2, collision.normal.multiplyScalar(-bias / 2)]];
     }
 
     public static step(deltaTime : number, substeps = 1)
@@ -162,9 +165,22 @@ export class Physics
         {
             if (b.isStatic) continue;
             b.applyCurrentForce(deltaTime);
-            b.x += b.velocity.x * deltaTime;
-            b.y += b.velocity.y * deltaTime;
-            b.rotation += b.angularVelocity * deltaTime;
+            const slop = 0.05;
+            const signX = Math.sign(b.velocity.x);
+            const signY = Math.sign(b.velocity.y);
+
+            const biasX = Math.max(Math.abs(b.velocity.x) - slop, 0);
+            const biasY = Math.max(Math.abs(b.velocity.y) - slop, 0);
+
+            b.x += signX * biasX * deltaTime;
+            b.y += signY * biasY * deltaTime;
+
+            const angularSlop = 0.000001;
+            const angularVelocitySign = Math.sign(b.angularVelocity);
+            const biasAngularVelocity = Math.max(Math.abs(b.angularVelocity) - angularSlop, 0);
+
+
+            b.rotation += biasAngularVelocity * angularVelocitySign * deltaTime;
             b.updateBoundingBox();
         }
     }
