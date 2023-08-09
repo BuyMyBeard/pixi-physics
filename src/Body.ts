@@ -3,6 +3,7 @@ import { app } from '.';
 import '@pixi/math-extras';
 import { ObservableTransform } from './ObservableTransform';
 import { Collision } from './Collision';
+import { Layers } from './Layers';
 
 // export type BodyType = 'Dynamic' | 'Kinematic' | 'Static';
 
@@ -26,6 +27,7 @@ export interface BodyParameters
  */
 export abstract class Body extends Container
 {
+    protected _layer : number | string = 0;
     protected _boundingBox : Rectangle = new Rectangle();
     // public override transform : ObservableTransform;
     protected _force = new Point(0, 0);
@@ -117,6 +119,16 @@ export abstract class Body extends Container
     public get torque()
     {
         return this._torque;
+    }
+
+    public get layer()
+    {
+        return this._layer;
+    }
+    public set layer(value : number | string)
+    {
+        if (!Layers.layerExists(value)) throw new Error(`Layer ${value} is undefined`);
+        this._layer = value;
     }
 
     public abstract updateBoundingBox() : void;

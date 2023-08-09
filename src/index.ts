@@ -8,6 +8,7 @@ import { ScreenContainer } from './ScreenContainer';
 import { Debug } from './Debug';
 import { CircleBody } from './CircleBody';
 import { CapsuleBody } from './CapsuleBody';
+import { Layers } from './Layers';
 
 export const app = new Application({
     view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
@@ -17,6 +18,11 @@ export const app = new Application({
     width: window.innerWidth,
     height: window.innerHeight,
 });
+
+Layers.addLayer(1, 'balls', true);
+Layers.addLayer(2, 'polygons', true);
+Layers.setInteraction(1, 2, false);
+Layers.setInteraction(2, 2, false);
 
 console.log(MathUtils.lineSegmentCircleIntersection([new Point(1, 1), new Point(1, 6)], new Circle(10, 10, 1)));
 
@@ -61,6 +67,7 @@ for (let i = 0; i < 10; i++)
         bounciness: 0.1,
     });
 
+    c.layer = 'balls';
     c.addForce(new Point(0, 0.2), false);
 }
 
@@ -92,6 +99,7 @@ for (let i = 0; i < 50; i++)
         // isStatic,
     });
 
+    p.layer = 2;
     p.addForce(new Point(0, 0.2), false);
     // p.angularVelocity = 0.05;
 }

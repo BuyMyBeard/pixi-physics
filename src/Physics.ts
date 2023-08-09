@@ -3,6 +3,7 @@ import { Body } from './Body';
 import { Collision } from './Collision';
 import { sweepAndPrune } from './SAP';
 import { MathUtils } from './MathUtils';
+import { Layers } from './Layers';
 
 /**
  * Static class that manages collisions every frame between bodies
@@ -23,6 +24,7 @@ export class Physics
 
         listOfPairs.forEach((pair) =>
         {
+            if (!Layers.getInteraction(pair[0].layer, pair[1].layer)) return;
             const index = Collision.collisionIndex(pair);
             const collision = Collision.test(pair[0], pair[1]);
 
