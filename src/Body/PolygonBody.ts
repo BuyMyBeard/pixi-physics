@@ -1,7 +1,7 @@
 import { Body, BodyParameters } from './Body';
 import { ColorSource, Point, Rectangle } from 'pixi.js';
-import { MathUtils, Segment } from './MathUtils';
-import { ObservableTransform } from './ObservableTransform';
+import { MathUtils, Segment } from '../Utils/MathUtils';
+import { ObservableTransform } from '../Utils/ObservableTransform';
 
 export class PolygonBody extends Body
 {

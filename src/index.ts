@@ -1,14 +1,14 @@
 import { Application, Ticker, Point, Circle } from 'pixi.js';
-import { PolygonBody } from './PolygonBody';
-import { MathUtils } from './MathUtils';
-import { Body } from './Body';
-import { Physics } from './Physics';
+import { PolygonBody } from './Body/PolygonBody';
+import { MathUtils } from './Utils/MathUtils';
+import { Body } from './Body/Body';
+import { Physics } from './Physics/Physics';
 import { InputSystem } from './InputSystem';
 import { ScreenContainer } from './ScreenContainer';
-import { Debug } from './Debug';
-import { CircleBody } from './CircleBody';
-import { CapsuleBody } from './CapsuleBody';
-import { Layers } from './Layers';
+import { Debug } from './Utils/Debug';
+import { CircleBody } from './Body/CircleBody';
+import { CapsuleBody } from './Body/CapsuleBody';
+import { Layers } from './Physics/Layers';
 
 export const app = new Application({
     view: document.getElementById('pixi-canvas') as HTMLCanvasElement,

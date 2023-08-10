@@ -1,8 +1,8 @@
 import { Point } from 'pixi.js';
-import { Body } from './Body';
+import { Body } from '../Body/Body';
 import { Collision } from './Collision';
-import { sweepAndPrune } from './SAP';
-import { MathUtils } from './MathUtils';
+import { BroadPhase, SweepAndPrune } from '../BroadPhase';
+import { MathUtils } from '../Utils/MathUtils';
 import { Layers } from './Layers';
 
 /**
@@ -10,6 +10,7 @@ import { Layers } from './Layers';
  */
 export class Physics
 {
+    static broadPhase : BroadPhase = new SweepAndPrune();
     /**
      * Applies a broad phase algorithm to the body pool,
      * and checks for each pair in the narrow phase if the bodies intersect.
@@ -18,7 +19,7 @@ export class Physics
      */
     static checkForCollisions()
     {
-        const listOfPairs = sweepAndPrune(Body.bodyPool);
+        const listOfPairs = this.broadPhase.apply(Body.bodyPool);
         const newCollisions : Collision[] = [];
         let queuedResolutions : [Body, Point][] = [];
 

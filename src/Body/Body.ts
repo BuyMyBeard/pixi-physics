@@ -1,9 +1,9 @@
 import { Graphics, Point, Container, Sprite, ColorSource, ILineStyleOptions, Rectangle, IDestroyOptions } from 'pixi.js';
-import { app } from '.';
+import { app } from '..';
 import '@pixi/math-extras';
-import { ObservableTransform } from './ObservableTransform';
-import { Collision } from './Collision';
-import { Layers } from './Layers';
+import { ObservableTransform } from '../Utils/ObservableTransform';
+import { Collision } from '../Physics/Collision';
+import { Layers } from '../Physics/Layers';
 
 // export type BodyType = 'Dynamic' | 'Kinematic' | 'Static';
 

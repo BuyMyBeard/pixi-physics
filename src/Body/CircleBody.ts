@@ -1,6 +1,6 @@
 import { IPointData, Point, Rectangle } from 'pixi.js';
 import { Body, BodyParameters } from './Body';
-import { ObservableTransform } from './ObservableTransform';
+import { ObservableTransform } from '../Utils/ObservableTransform';
 
 interface BallParameters extends BodyParameters
 {

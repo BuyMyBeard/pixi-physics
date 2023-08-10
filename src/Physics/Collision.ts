@@ -1,10 +1,10 @@
 import { Graphics, Point } from 'pixi.js';
-import { Body } from './Body';
-import { CircleBody } from './CircleBody';
-import { PolygonBody } from './PolygonBody';
-import { MathUtils, Segment } from './MathUtils';
-import { app } from '.';
-import { Debug } from './Debug';
+import { Body } from '../Body/Body';
+import { CircleBody } from '../Body/CircleBody';
+import { PolygonBody } from '../Body/PolygonBody';
+import { MathUtils, Segment } from '../Utils/MathUtils';
+import { app } from '..';
+import { Debug } from '../Utils/Debug';
 
 /**
  * Instance of collision containing collision information

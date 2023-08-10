@@ -1,5 +1,5 @@
 import { Color, ColorSource, Graphics, ILineStyleOptions, LineStyle, Point } from 'pixi.js';
-import { app } from '.';
+import { app } from '..';
 
 export class Debug
 {

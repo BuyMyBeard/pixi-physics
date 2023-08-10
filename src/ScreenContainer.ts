@@ -1,6 +1,6 @@
 import { Point } from 'pixi.js';
-import { BodyParameters } from './Body';
-import { PolygonBody } from './PolygonBody';
+import { BodyParameters } from './Body/Body';
+import { PolygonBody } from './Body/PolygonBody';
 
 export class ScreenContainer
 {
