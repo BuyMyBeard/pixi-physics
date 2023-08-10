@@ -61,12 +61,18 @@ export abstract class Body extends Container
      * Current angular velocity of body, in radians / s
      */
     public angularVelocity = 0;
+    /** Density to calculate mass with if mass is not provided */
     public readonly density : number = 1;
+    /** How bouncy this body is. 0 is no elasticity at all, 1 is perfect elasticity */
     public bounciness = 1;
+    /** Resistance to being moved against other surface while still. Should be greater than kinetic friction. */
     public staticFriction = 0.6;
+    /** Resistance to being moved against other surface while in movement */
     public kineticFriction = 0.4;
+    /** Body will not move */
+
     public isStatic = false;
-    public mass = 1;
+    private _mass = 1;
     protected queuedResponse? : Point;
     protected queuedResolution? : Point;
     public graphics = new Graphics();
@@ -74,19 +80,13 @@ export abstract class Body extends Container
     /**
      * If set to true, collision with other bodies will not apply physics but will call
      * OnCollisionEnter, OnCollisionStay, and OnCollisionExit
-     */
+    */
     public isTrigger = false;
-    /**
-     * Called when this body enters collision with another body
-     */
+    /** Called when this body enters collision with another body */
     public onCollisionEnter? : (collision : Collision) => void;
-    /**
-     * Called every frame when this body stays inside the collider of another body
-     */
+    /** Called every frame when this body stays inside the collider of another body */
     public onCollisionStay? : (collision : Collision) => void;
-    /**
-     * Called when this body exits the collider of another body
-     */
+    /** Called when this body exits the collider of another body */
     public onCollisionExit? : (collision : Collision) => void;
 
     constructor()
@@ -102,25 +102,46 @@ export abstract class Body extends Container
         this.sprite.zIndex = 1;
     }
 
+    /**
+     * This body's mass. Setting this to a value of 0 or below will automatically set it to 5e-324.
+     * If isStatic = true, will return Infinity.
+     */
+    public get mass()
+    {
+        if (this.isStatic) return Number.POSITIVE_INFINITY;
+
+        return this._mass;
+    }
+    public set mass(value : number)
+    {
+        if (value <= 0) this._mass = Number.MIN_VALUE;
+        else this._mass = value;
+    }
+    /** This body's moment of inertia, used by physics engine. If isStatic = true, will return Infinity */
     public get inertia()
     {
+        if (this.isStatic) return Number.POSITIVE_INFINITY;
+
         return this._inertia;
     }
-
+    /** Bounding box of body used by the physics engine broad phase algorithm */
     public get boundingBox() : Rectangle
     {
         return this._boundingBox;
     }
 
+    /** Current linear force applied every frame to the body in units / s */
     public get force()
     {
         return this._force.clone();
     }
+
+    /** Current rotational force applied every frame to the body in radians / s  */
     public get torque()
     {
         return this._torque;
     }
-
+    /** This body's layer, by default 0. To change this, make sure to call Layers.addLayer() with the new layer first. */
     public get layer()
     {
         return this._layer;
@@ -131,48 +152,15 @@ export abstract class Body extends Container
         this._layer = value;
     }
 
+    /** Updates body bounding box. Called by the physics engine. */
     public abstract updateBoundingBox() : void;
-    public abstract updateInertia() : void;
+
+    protected abstract updateInertia() : void;
+
+    /** Center of mass of body, used by physics engine to apply rotational physics and such. */
     public abstract get centroid() : Point;
 
-    public queueResponse(velocity : Point)
-    {
-        if (this.queuedResponse === undefined)
-        {
-            this.queuedResponse = velocity;
-        }
-        else
-        {
-            this.queuedResponse.add(velocity);
-        }
-    }
-
-    public queueResolution(translation : Point)
-    {
-        if (this.queuedResolution === undefined)
-        {
-            this.queuedResolution = translation;
-        }
-        else
-        {
-            this.queuedResolution.add(translation);
-        }
-    }
-
-    public static getPairArray() : Array<[Body, Body]>
-    {
-        const arr : Array<[Body, Body]> = [];
-
-        for (let i = 0; i < Body.bodyPool.length; i++)
-        {
-            for (let j = i + 1; j < Body.bodyPool.length; j++)
-            {
-                arr.push([Body.bodyPool[i], Body.bodyPool[j]]);
-            }
-        }
-
-        return arr;
-    }
+    /** Called every frame by the physics engine. please do not call this. */
     public applyCurrentForce(deltaTime : number)
     {
         if (this.isStatic) return;
@@ -193,8 +181,8 @@ export abstract class Body extends Container
 
     /**
      *
-     * @param force force added in pixels/s;
-     * @param impulse true by default, if false, force will be applied every frame
+     * @param force Force added in units / s;
+     * @param impulse Defines if force is applied instantly, otherwise force will be applied every frame. True by default.
      */
     public addForce(force : Point, impulse = true)
     {
@@ -203,6 +191,12 @@ export abstract class Body extends Container
         else this._force.set(this._force.x + force.x, this._force.y + force.y);
     }
 
+    /**
+     *
+     * @param force Force added in radians / s
+     * @param impulse Defines if force is applied instantly, otherwise force will be applied every frame. True by default.
+     * @returns
+     */
     public addTorque(force : number, impulse = true)
     {
         if (this.isStatic) return;

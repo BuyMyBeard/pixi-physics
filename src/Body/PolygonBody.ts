@@ -5,13 +5,8 @@ import { ObservableTransform } from '../Utils/ObservableTransform';
 
 export class PolygonBody extends Body
 {
-    public override updateInertia(): void {
-        if (this.isStatic)
-        {
-            this._inertia = Number.POSITIVE_INFINITY;
-            this.mass = Number.POSITIVE_INFINITY;
-            return;
-        }
+    protected override updateInertia(): void
+    {
         this._inertia = 1 / 12 * this.mass * ((this.boundingBox.width * this.boundingBox.width)
             + (this.boundingBox.height * this.boundingBox.height));
 
@@ -30,8 +25,10 @@ export class PolygonBody extends Body
         // }
         // this._inertia = this.mass * topSum / (6 * bottomSum);
     }
-    _isConvex : boolean;
-    rawVertices : Point[];
+    /** Tells if polygon is convex or concave */
+    public readonly isConvex : boolean = true;
+    private _rawVertices : Point[];
+    /** Current transformed vertices of polygon in world space. Modifying this may cause unintended physics behaviour. */
     public vertices : Point[];
     constructor(vertices : Point[], params? : BodyParameters)
     {
@@ -41,26 +38,27 @@ export class PolygonBody extends Body
             throw new Error('Polygon needs at least 3 vertices');
         }
         // TODO: support concave polygons with polygon partitioning
-        // if (!MathUtils.isConvexPolygon(vertices)) {
-        //   throw new Error("Concave polygon not supported");
-        // }
-        this._isConvex = MathUtils.isConvexPolygon(vertices);
-        this.rawVertices = vertices;
+        this.isConvex = MathUtils.isConvexPolygon(vertices);
+        if (!this.isConvex)
+        {
+            throw new Error('Concave polygon not supported');
+        }
+        this._rawVertices = vertices;
         Object.assign(this, params);
         this.transform.updateLocalTransform();
         this.transform.updateTransform(this.parent.transform);
-        this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
+        this.vertices = this._rawVertices.map((v) => this.transform.worldTransform.apply(v));
         this.updateBoundingBox(true);
         this.updateInertia();
         const color : ColorSource = params === undefined || params.color === undefined ? 0xFFFFFF : params.color;
 
         if (params !== undefined && params.lineStyle !== undefined) this.graphics.lineStyle(params.lineStyle);
         this.graphics.beginFill(color);
-        this.graphics.drawPolygon(this.rawVertices);
+        this.graphics.drawPolygon(this._rawVertices);
         this.graphics.endFill();
 
         const centroid = this.transform.localTransform.applyInverse(this.centroid);
-        const edgeMiddle = this.rawVertices[1].add(this.rawVertices[2].subtract(this.rawVertices[1]).multiplyScalar(0.5));
+        const edgeMiddle = this._rawVertices[1].add(this._rawVertices[2].subtract(this._rawVertices[1]).multiplyScalar(0.5));
 
         this.graphics.moveTo(centroid.x, centroid.y);
         this.graphics.lineTo(edgeMiddle.x, edgeMiddle.y);
@@ -68,12 +66,7 @@ export class PolygonBody extends Body
 
     protected updateVertices()
     {
-        this.vertices = this.rawVertices.map((v) => this.transform.worldTransform.apply(v));
-    }
-
-    public test(v : Point)
-    {
-        return this.collidesWithPoint(v);
+        this.vertices = this._rawVertices.map((v) => this.transform.worldTransform.apply(v));
     }
 
     public updateBoundingBox(forceUpdate = false)
@@ -111,6 +104,9 @@ export class PolygonBody extends Body
         }
     }
 
+    /**
+     * Returns line segments of each edge of the polygon. Modifying the point values may cause unintended physics behaviour.
+     */
     public get edges() : Array<Segment>
     {
         const edges : Array<Segment> = [];
@@ -139,7 +135,12 @@ export class PolygonBody extends Body
         return verticesSum.multiplyScalar(1 / this.vertices.length);
     }
 
-    public collidesWithPoint(point : Point) : boolean
+    /**
+     * Checks if the point passed as parameter is contained within this polygon
+     * @param point Position to check
+     * @returns True if position is within polygon, false otherwise
+     */
+    public contains(point : Point) : boolean
     {
         const boundingBox = this.boundingBox;
         const pointOutside = new Point(boundingBox.x, boundingBox.y).add(new Point(-1, 0));
@@ -148,61 +149,9 @@ export class PolygonBody extends Body
 
         for (const edge of this.edges)
         {
-            if (this.segmentsIntersect2(ray, edge)) intersectionCount++;
+            if (MathUtils.segmentsIntersect2(ray, edge)) intersectionCount++;
         }
 
         return intersectionCount % 2 === 1;
-    }
-
-    public collidesWithPolygon(polygon : PolygonBody)
-    {
-        if (this.collidesWithPoint(polygon.vertices[0]) || polygon.collidesWithPoint(this.vertices[0]))
-        {
-            return true;
-        }
-        for (const s1 of this.edges)
-        {
-            for (const s2 of polygon.edges)
-            {
-                if (this.segmentsIntersect2(s1, s2))
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    // Given three collinear points p, q, r, the function checks if
-    // point q lies on line segment 'pr'
-    private onSegment(p : Point, q : Point, r : Point) : boolean
-    {
-        return q.x <= Math.max(p.x, r.x) && q.x >= Math.min(p.x, r.x)
-        && q.y <= Math.max(p.y, r.y) && q.y >= Math.min(p.y, r.y);
-    }
-
-    // taken from https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
-    private segmentsIntersect(s1 : Segment, s2 : Segment)
-    {
-        const o1 = MathUtils.orientation(s1[0], s1[1], s2[0]);
-        const o2 = MathUtils.orientation(s1[0], s1[1], s2[1]);
-        const o3 = MathUtils.orientation(s2[0], s2[1], s1[0]);
-        const o4 = MathUtils.orientation(s2[0], s2[1], s1[1]);
-
-        return (o1 !== o2 && o3 !== o4);
-    }
-
-    // taken from https://www.jeffreythompson.org/collision-detection/line-line.php
-    private segmentsIntersect2(s1 : Segment, s2 : Segment)
-    {
-    // calculate the distance to intersection point
-        const uA = (((s2[1].x - s2[0].x) * (s1[0].y - s2[0].y)) - ((s2[1].y - s2[0].y) * (s1[0].x - s2[0].x)))
-        / (((s2[1].y - s2[0].y) * (s1[1].x - s1[0].x)) - ((s2[1].x - s2[0].x) * (s1[1].y - s1[0].y)));
-        const uB = (((s1[1].x - s1[0].x) * (s1[0].y - s2[0].y)) - ((s1[1].y - s1[0].y) * (s1[0].x - s2[0].x)))
-        / (((s2[1].y - s2[0].y) * (s1[1].x - s1[0].x)) - ((s2[1].x - s2[0].x) * (s1[1].y - s1[0].y)));
-
-        // if uA and uB are between 0-1, lines are colliding
-        return uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1;
     }
 }

@@ -1,4 +1,4 @@
-import { IPointData, Point, Rectangle } from 'pixi.js';
+import { Point, Rectangle } from 'pixi.js';
 import { Body, BodyParameters } from './Body';
 import { ObservableTransform } from '../Utils/ObservableTransform';
 
@@ -8,29 +8,41 @@ interface BallParameters extends BodyParameters
 }
 export class CircleBody extends Body
 {
-    public override updateInertia(): void {
+    protected override updateInertia(): void
+    {
         this._inertia = 0.5 * this.mass * this.radius * this.radius;
     }
     protected _rawRadius = 50;
     protected _radius = 50;
 
-    public override get centroid(): Point {
+    public override get centroid(): Point
+    {
         return this.getGlobalPosition();
     }
+    /**
+     * Radius of circle.
+     *
+     * Setting this to a value of 0 or below will set it to 5e-324
+    */
     public get radius()
     {
         return this._radius;
     }
 
+    // TODO: Modify scale of DisplayObject depending on radius change
     public set radius(value : number)
     {
-        if (value <= 0) value = 1;
+        if (value <= 0) value = Number.MIN_VALUE;
         const ratio = this._rawRadius / this.radius;
 
         this._rawRadius = value * ratio;
         this._radius = value;
     }
 
+    /**
+     * Instanciates a Circle Body
+     * @param params Optional parameters for giving the Circle Body different properties
+     */
     constructor(params? : BallParameters)
     {
         super();
@@ -70,8 +82,12 @@ export class CircleBody extends Body
 
         this._radius = r1.subtract(r0).magnitude();
     }
-
-    public pointInside(point : IPointData) : boolean
+    /**
+     * Checks if the point passed as parameter is contained within this circle
+     * @param point Position to check
+     * @returns True if position is within circle, false otherwise
+     */
+    public contains(point : Point) : boolean
     {
         return this.getGlobalPosition().subtract(point).magnitude() <= this.radius;
     }

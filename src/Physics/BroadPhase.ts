@@ -1,9 +1,14 @@
-import { Body } from './Body/Body';
+import { Body } from '../Body/Body';
 
+/** Dependency injection setup for implementing different types of Broad phase algorithms */
 export interface BroadPhase
 {
     apply(colliders : Body[]) : [Body, Body][];
 }
+/**
+ * Sorts all colliders, and then checks for overlap of bounding box on X axis to reduce amount of collider pairs to check
+ */
+// TODO: could check density of bodies and sweep on Y axis instead if more optimal
 export class SweepAndPrune implements BroadPhase
 {
     apply(colliders : Array<Body>) : Array<[Body, Body]>

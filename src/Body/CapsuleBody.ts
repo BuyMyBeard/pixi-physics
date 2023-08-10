@@ -49,7 +49,7 @@ export class CapsuleBody extends Body
     {
         throw new Error('Method not implemented.');
     }
-    public override updateInertia(): void
+    protected override updateInertia(): void
     {
         throw new Error('Method not implemented.');
     }

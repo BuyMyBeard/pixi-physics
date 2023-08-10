@@ -1,15 +1,14 @@
 import { Point } from 'pixi.js';
 import { Body } from '../Body/Body';
 import { Collision } from './Collision';
-import { BroadPhase, SweepAndPrune } from '../BroadPhase';
+import { BroadPhase, SweepAndPrune } from './BroadPhase';
 import { MathUtils } from '../Utils/MathUtils';
 import { Layers } from './Layers';
 
-/**
- * Static class that manages collisions every frame between bodies
- */
+/** Static class that manages collisions every frame between bodies */
 export class Physics
 {
+    /** Currently applied broad phase algorithm to narrow the amount of pairs to test for collisions */
     static broadPhase : BroadPhase = new SweepAndPrune();
     /**
      * Applies a broad phase algorithm to the body pool,
@@ -63,7 +62,6 @@ export class Physics
 
         Collision.collisionsInProgress.forEach((collision) =>
         {
-            // TODO: test with isTrigger
             Collision.findContacts(collision);
             if (!collision.isTrigger) Physics.respondToCollision(collision);
         });
@@ -72,7 +70,8 @@ export class Physics
      * Adds linear and angular impulses to bodies to respond to collisions.
      * Follows the implementation suggested in the article "Physics, Part 3: Collision Response",
      * found here: http://www.chrishecker.com/Rigid_Body_Dynamics
-     * @param collision
+     *
+     * @param collision Collision information
      */
     private static respondToCollision(collision : Collision)
     {
@@ -240,19 +239,8 @@ export class Physics
             const angularVelocitySign = Math.sign(b.angularVelocity);
             const biasAngularVelocity = Math.max(Math.abs(b.angularVelocity) - angularSlop, 0);
 
-
             b.rotation += biasAngularVelocity * angularVelocitySign * deltaTime;
             b.updateBoundingBox();
-        }
-    }
-
-    public static raycast(origin : Point, length = Number.POSITIVE_INFINITY, bodyList = Body.bodyPool)
-    {
-        let minDistance = length;
-
-        for (const b of bodyList)
-        {
-            minDistance = 0;
         }
     }
 }

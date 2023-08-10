@@ -1,9 +1,8 @@
-import { Graphics, Point } from 'pixi.js';
+import { Point } from 'pixi.js';
 import { Body } from '../Body/Body';
 import { CircleBody } from '../Body/CircleBody';
 import { PolygonBody } from '../Body/PolygonBody';
-import { MathUtils, Segment } from '../Utils/MathUtils';
-import { app } from '..';
+import { MathUtils } from '../Utils/MathUtils';
 import { Debug } from '../Utils/Debug';
 
 /**
@@ -350,7 +349,6 @@ export class Collision
             const normalLineEnd = c.add(collision.normal.multiplyScalar(10));
 
             Debug.drawLine(c.x, c.y, normalLineEnd.x, normalLineEnd.y);
-        })
-
+        });
     }
 }

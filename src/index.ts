@@ -3,11 +3,10 @@ import { PolygonBody } from './Body/PolygonBody';
 import { MathUtils } from './Utils/MathUtils';
 import { Body } from './Body/Body';
 import { Physics } from './Physics/Physics';
-import { InputSystem } from './InputSystem';
+import { InputSystem } from './Utils/InputSystem';
 import { ScreenContainer } from './ScreenContainer';
 import { Debug } from './Utils/Debug';
 import { CircleBody } from './Body/CircleBody';
-import { CapsuleBody } from './Body/CapsuleBody';
 import { Layers } from './Physics/Layers';
 
 export const app = new Application({
@@ -24,8 +23,6 @@ Layers.addLayer(2, 'polygons', true);
 Layers.setInteraction(1, 2, false);
 Layers.setInteraction(2, 2, false);
 
-console.log(MathUtils.lineSegmentCircleIntersection([new Point(1, 1), new Point(1, 6)], new Circle(10, 10, 1)));
-
 const vertices : Point[] = [
     new Point(-50, -50),
     new Point(50, -50),
@@ -38,7 +35,6 @@ const vertices2 : Point[] = [
     new Point(400, 400),
     new Point(200, 400),
 ];
-
 const platformVertices : Point[] = [
     new Point(-100, -5),
     new Point(100, -5),

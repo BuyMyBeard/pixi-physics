@@ -284,4 +284,27 @@ export class MathUtils
 
         return false;
     }
+    // taken from https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
+    static segmentsIntersect(s1 : Segment, s2 : Segment)
+    {
+        const o1 = MathUtils.orientation(s1[0], s1[1], s2[0]);
+        const o2 = MathUtils.orientation(s1[0], s1[1], s2[1]);
+        const o3 = MathUtils.orientation(s2[0], s2[1], s1[0]);
+        const o4 = MathUtils.orientation(s2[0], s2[1], s1[1]);
+
+        return (o1 !== o2 && o3 !== o4);
+    }
+    // taken from https://www.jeffreythompson.org/collision-detection/line-line.php
+    /** Honestly kinda fucking disgusting */
+    static segmentsIntersect2(s1 : Segment, s2 : Segment)
+    {
+    // calculate the distance to intersection point
+        const uA = (((s2[1].x - s2[0].x) * (s1[0].y - s2[0].y)) - ((s2[1].y - s2[0].y) * (s1[0].x - s2[0].x)))
+        / (((s2[1].y - s2[0].y) * (s1[1].x - s1[0].x)) - ((s2[1].x - s2[0].x) * (s1[1].y - s1[0].y)));
+        const uB = (((s1[1].x - s1[0].x) * (s1[0].y - s2[0].y)) - ((s1[1].y - s1[0].y) * (s1[0].x - s2[0].x)))
+        / (((s2[1].y - s2[0].y) * (s1[1].x - s1[0].x)) - ((s2[1].x - s2[0].x) * (s1[1].y - s1[0].y)));
+
+        // if uA and uB are between 0-1, lines are colliding
+        return uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1;
+    }
 }
