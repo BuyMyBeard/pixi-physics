@@ -1,7 +1,7 @@
 import { Point } from 'pixi.js';
 import { Body } from '../Body/Body';
 import { Collision } from './Collision';
-import { BroadPhase, SweepAndPrune } from './BroadPhase';
+import { BroadPhase, SweepAndPrune, GridPartition } from './BroadPhase';
 import { MathUtils } from '../Utils/MathUtils';
 import { Layers } from './Layers';
 
@@ -9,7 +9,7 @@ import { Layers } from './Layers';
 export class Physics
 {
     /** Currently applied broad phase algorithm to narrow the amount of pairs to test for collisions */
-    static broadPhase : BroadPhase = new SweepAndPrune();
+    static broadPhase : BroadPhase = new GridPartition();
     /**
      * Applies a broad phase algorithm to the body pool,
      * and checks for each pair in the narrow phase if the bodies intersect.

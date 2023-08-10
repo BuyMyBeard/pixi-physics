@@ -20,7 +20,7 @@ export const app = new Application({
 
 Layers.addLayer(1, 'balls', true);
 Layers.addLayer(2, 'polygons', true);
-Layers.setInteraction(1, 2, false);
+// Layers.setInteraction(1, 2, false);
 Layers.setInteraction(2, 2, false);
 
 const vertices : Point[] = [
@@ -42,7 +42,7 @@ const platformVertices : Point[] = [
     new Point(-100, 5),
 ];
 
-for (let i = 0; i < 10; i++)
+for (let i = 0; i < 100; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
