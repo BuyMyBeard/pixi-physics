@@ -1,4 +1,4 @@
-import { FillStyle, Point } from 'pixi.js';
+import { Point } from 'pixi.js';
 import { Body } from '../Body/Body';
 
 /** Dependency injection setup for implementing different types of Broad phase algorithms */
@@ -6,10 +6,9 @@ export interface BroadPhase
 {
     apply(colliders : Body[]) : [Body, Body][];
 }
-/**
- * Sorts all colliders, and then checks for overlap of bounding box on X axis to reduce amount of collider pairs to check
- */
+/** Sorts all bodies, and then returns pairs whose bounding box overlaps on X axis */
 // TODO: could check density of bodies and sweep on Y axis instead if more optimal
+// Not really useful, because most of the time bodies are more dense at the bottom of the screen because of gravity
 export class SweepAndPrune implements BroadPhase
 {
     apply(colliders : Array<Body>) : Array<[Body, Body]>
@@ -50,6 +49,10 @@ export class SweepAndPrune implements BroadPhase
     }
 }
 
+/**
+ * Partitions the space into a grid, places bodies into cells depending on bouding box,
+ * and then returns pairs which are in the same cell
+ */
 export class GridPartition implements BroadPhase
 {
     gridCorner : Point;
@@ -60,9 +63,9 @@ export class GridPartition implements BroadPhase
     private listOfPairs : Array<[Body, Body]> = [];
     private cellDimension = new Point(0, 0);
 
-
-    constructor(gridCorner = new Point(0, 0), dimensions = new Point(window.innerWidth, window.innerHeight),
-        cellCount = new Point(50, 50))
+    constructor(gridCorner = new Point(-100, -100),
+        dimensions = new Point(window.innerWidth + 200, window.innerHeight + 200),
+        cellCount = new Point(20, 20))
     {
         this.gridCorner = gridCorner;
         this.dimensions = dimensions;
@@ -92,6 +95,10 @@ export class GridPartition implements BroadPhase
             const endingCell = new Point(Math.floor(aabb.right / this.cellDimension.x),
                 Math.floor(aabb.bottom / this.cellDimension.y));
 
+            // if collider is not contained within grid then ignore it
+            if (startingCell.x < 0 || startingCell.y < 0
+                || endingCell.x >= this.cellCount.x || endingCell.y >= this.cellCount.y) return;
+
             this.fillCells(collider, startingCell, endingCell);
         });
 
@@ -111,13 +118,13 @@ export class GridPartition implements BroadPhase
         if (startCell.equals(endCell))
         {
             this.grid[startCell.y][startCell.x].push(body);
+
             return;
         }
-        const spaceFilled = endCell.subtract(startCell);
 
-        for (let j = startCell.y; j <= spaceFilled.y; j++)
+        for (let j = startCell.y; j <= endCell.y; j++)
         {
-            for (let i = startCell.x; i <= spaceFilled.x; i++)
+            for (let i = startCell.x; i <= endCell.x; i++)
             {
                 this.grid[j][i].push(body);
             }
@@ -147,5 +154,24 @@ export class GridPartition implements BroadPhase
         {
             this.listOfPairs.push([body1, body2]);
         }
+    }
+}
+
+/** Pretty much just returns every unique pair */
+export class CheckEveryUniquePair implements BroadPhase
+{
+    apply(colliders: Body[]): [Body, Body][]
+    {
+        const listOfPairs : [Body, Body][] = [];
+
+        for (let i = 0; i < colliders.length; i++)
+        {
+            for (let j = i + 1; j < colliders.length; j++)
+            {
+                listOfPairs.push([colliders[i], colliders[j]]);
+            }
+        }
+
+        return listOfPairs;
     }
 }

@@ -149,7 +149,7 @@ function updateLoop(deltaTime : number)
 {
     Debug.reset();
     moveBodyWithInputs(deltaTime, c2, true);
-    Physics.step(deltaTime);
+    Physics.step(deltaTime, 8);
 }
 
 function moveBodyWithInputs(deltaTime : number, body : Body, addEnergy = false, speed = 5)
