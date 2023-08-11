@@ -8,6 +8,7 @@ import { ScreenContainer } from './ScreenContainer';
 import { Debug } from './Utils/Debug';
 import { CircleBody } from './Body/CircleBody';
 import { Layers } from './Physics/Layers';
+import { BinaryTree } from './Utils/BinaryTree';
 
 export const app = new Application({
     view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
@@ -18,6 +19,12 @@ export const app = new Application({
     height: window.innerHeight,
 });
 
+const bt = new BinaryTree<string>();
+const data = Array.from('In computer science, an abstract syntax tree (AST), or just syntax tree, is a tree representation of the abstract syntactic structure of text (often source code) written in a formal language. Each node of the tree denotes a construct occurring in the text. The syntax is "abstract" in the sense that it does not represent every detail appearing in the real syntax, but rather just the structural or content-related details. For instance, grouping parentheses are implicit in the tree structure, so these do not have to be represented as separate nodes. Likewise, a syntactic construct like an if-condition-then statement may be denoted by means of a single node with three branches. This distinguishes abstract syntax trees from concrete syntax trees, traditionally designated parse trees. Parse trees are typically built by a parser during the source code translation and compiling process. Once built, additional information is added to the AST by means of subsequent processing, e.g., contextual analysis. Abstract syntax trees are also used in program analysis and program transformation systems.')
+
+bt.fillRecursively(data, bt.root, 1);
+
+console.log(bt);
 Layers.addLayer(1, 'balls', true);
 Layers.addLayer(2, 'polygons', true);
 // Layers.setInteraction(1, 2, false);
@@ -42,7 +49,7 @@ const platformVertices : Point[] = [
     new Point(-100, 5),
 ];
 
-for (let i = 0; i < 100; i++)
+for (let i = 0; i < 10; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
@@ -75,7 +82,7 @@ for (let i = 0; i < 100; i++)
 //     }
 // })
 
-for (let i = 0; i < 50; i++)
+for (let i = 0; i < 10; i++)
 {
     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
