@@ -92,13 +92,13 @@ export class KDTree extends BinaryTree<Body> implements BroadPhase
 
         if (data.length > 0)
         {
-            node.left = new Node<Body>();
+            node.left = new Node<Body>(depth + 1);
             this.processData(leftData, node.left, depth + 1);
         }
 
         if (rightData.length > 0)
         {
-            node.right = new Node<Body>();
+            node.right = new Node<Body>(depth + 1);
             this.processData(rightData, node.right, depth + 1);
         }
     }
