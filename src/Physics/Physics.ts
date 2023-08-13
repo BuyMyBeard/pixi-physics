@@ -77,11 +77,13 @@ export class Physics
      */
     private static respondToCollision(collision : Collision)
     {
-        this.addNormalResponse(collision);
-        this.addTangentResponse(collision);
+        const jTuple : [number, number] = [0, 0];
+
+        this.addNormalResponse(collision, jTuple);
+        // this.addTangentResponse(collision, jTuple);
     }
 
-    private static addNormalResponse(collision : Collision)
+    private static addNormalResponse(collision : Collision, jTuple : [number, number])
     {
         const A = collision.c1;
         const B = collision.c2;
@@ -94,8 +96,7 @@ export class Physics
         const impulseA = new Point(0, 0);
         const impulseB = new Point(0, 0);
 
-
-        for (const contact of collision.contacts)
+        collision.contacts.forEach((contact, index) =>
         {
             const ra = contact.subtract(centroidA);
             const rb = contact.subtract(centroidB);
@@ -110,7 +111,7 @@ export class Physics
                 .subtract(B.velocity)
                 .subtract(angularLinearVelocityB);
 
-            if (relativeVelocity.dot(n) > 0) continue;
+            if (relativeVelocity.dot(n) > 0) return;
 
             const numerator = -(1 + e) * relativeVelocity.dot(n);
             const denom1 = ((1 / A.mass) + (1 / B.mass)) / collision.contacts.length;
@@ -118,16 +119,16 @@ export class Physics
             const denom3 = Math.pow(rbPerp.dot(n), 2) / B.inertia;
             const j = numerator / (denom1 + denom2 + denom3);
 
-            this.contactsJVal.push(j);
+            jTuple[index] = j;
             const impulse = n.multiplyScalar(j);
 
             A.addTorque(ra.cross(impulse) / A.inertia);
             B.addTorque(-rb.cross(impulse) / B.inertia);
             A.addForce(impulse.multiplyScalar(1 / A.mass));
             B.addForce(impulse.multiplyScalar(-1 / B.mass));
-        }
+        });
     }
-    private static addTangentResponse(collision : Collision)
+    private static addTangentResponse(collision : Collision, jTuple : [number, number])
     {
         const A = collision.c1;
         const B = collision.c2;
@@ -141,7 +142,7 @@ export class Physics
         const impulseA = new Point(0, 0);
         const impulseB = new Point(0, 0);
 
-        for (const contact of collision.contacts)
+        collision.contacts.forEach((contact, index) =>
         {
             const ra = contact.subtract(centroidA);
             const rb = contact.subtract(centroidB);
@@ -160,7 +161,7 @@ export class Physics
 
             let tangent = relativeVelocity.subtract(n.multiplyScalar(relativeVelocity.dot(n)));
 
-            if (MathUtils.nearlyEqualPoint(tangent, new Point(0, 0))) continue;
+            if (MathUtils.nearlyEqualPoint(tangent, new Point(0, 0))) return;
 
             tangent = tangent.normalize();
 
@@ -172,7 +173,7 @@ export class Physics
 
             let frictionImpulse;
 
-            const j = this.contactsJVal.shift();
+            const j = jTuple[index];
 
             if (j === undefined) throw new Error('j value is undefined');
 
@@ -182,7 +183,7 @@ export class Physics
             torqueB += rb.cross(frictionImpulse) / B.inertia;
             impulseA.add(frictionImpulse.multiplyScalar(-1 / A.mass));
             impulseB.add(frictionImpulse.multiplyScalar(1 / B.mass));
-        }
+        });
         A.addTorque(torqueA);
         B.addTorque(torqueB);
         A.addForce(impulseA);

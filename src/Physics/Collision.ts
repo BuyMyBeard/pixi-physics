@@ -302,7 +302,7 @@ export class Collision
 
         let minDistance = Number.MAX_VALUE;
         let contact1 = new Point(0, 0);
-        let contact2 : Point | false = false;
+        let contact2 : any = false;
 
         p1.vertices.forEach((v) =>
         {
@@ -339,7 +339,12 @@ export class Collision
             });
         });
 
-        if (contact2) collision.contacts = [contact1, contact2];
+        if (contact2)
+        {
+            // if (MathUtils.nearlyEqual(contact1.x, contact2.x, 0.5)) contact1.x = contact2.x;
+            // if (MathUtils.nearlyEqual(contact1.y, contact2.y, 0.5)) contact1.y = contact2.y;
+            collision.contacts = [contact1, contact2];
+        }
         else collision.contacts = [contact1];
 
         collision.contacts.forEach((c) =>
