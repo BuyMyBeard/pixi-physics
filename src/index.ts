@@ -226,7 +226,7 @@ clickContainer.on('pointertap', (e : FederatedPointerEvent) =>
         color: Math.random() * 16777215,
         lineStyle,
         mass: 1,
-        bounciness: 0.1,
+        bounciness: 0,
     };
 
     if (type === 'Circle')

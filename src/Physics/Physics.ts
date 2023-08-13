@@ -9,6 +9,7 @@ import { Layers } from './Layers';
 /** Static class that manages collisions every frame between bodies */
 export class Physics
 {
+    private static contactsJVal : number[] = [];
     /** Currently applied broad phase algorithm to narrow the amount of pairs to test for collisions */
     static broadPhase : BroadPhase = new SweepAndPrune();
     /**
@@ -76,15 +77,23 @@ export class Physics
      */
     private static respondToCollision(collision : Collision)
     {
+        this.addNormalResponse(collision);
+        this.addTangentResponse(collision);
+    }
+
+    private static addNormalResponse(collision : Collision)
+    {
         const A = collision.c1;
         const B = collision.c2;
         const centroidA = A.centroid;
         const centroidB = B.centroid;
         const n = collision.normal;
-
-        const staticFriction = Math.max(A.staticFriction, B.staticFriction);
-        const kineticFriction = Math.max(A.kineticFriction, B.kineticFriction);
         const e = Math.min(A.bounciness, B.bounciness);
+        const torqueA = 0;
+        const torqueB = 0;
+        const impulseA = new Point(0, 0);
+        const impulseB = new Point(0, 0);
+
 
         for (const contact of collision.contacts)
         {
@@ -109,12 +118,45 @@ export class Physics
             const denom3 = Math.pow(rbPerp.dot(n), 2) / B.inertia;
             const j = numerator / (denom1 + denom2 + denom3);
 
+            this.contactsJVal.push(j);
             const impulse = n.multiplyScalar(j);
 
             A.addTorque(ra.cross(impulse) / A.inertia);
             B.addTorque(-rb.cross(impulse) / B.inertia);
             A.addForce(impulse.multiplyScalar(1 / A.mass));
             B.addForce(impulse.multiplyScalar(-1 / B.mass));
+        }
+    }
+    private static addTangentResponse(collision : Collision)
+    {
+        const A = collision.c1;
+        const B = collision.c2;
+        const centroidA = A.centroid;
+        const centroidB = B.centroid;
+        const n = collision.normal;
+        const staticFriction = Math.max(A.staticFriction, B.staticFriction);
+        const kineticFriction = Math.max(A.kineticFriction, B.kineticFriction);
+        let torqueA = 0;
+        let torqueB = 0;
+        const impulseA = new Point(0, 0);
+        const impulseB = new Point(0, 0);
+
+        for (const contact of collision.contacts)
+        {
+            const ra = contact.subtract(centroidA);
+            const rb = contact.subtract(centroidB);
+            const raPerp = new Point(-ra.y, ra.x);
+            const rbPerp = new Point(-rb.y, rb.x);
+
+            const angularLinearVelocityA = raPerp.multiplyScalar(A.angularVelocity + A.angularImpulse);
+            const angularLinearVelocityB = rbPerp.multiplyScalar(B.angularVelocity + A.angularImpulse);
+
+            const relativeVelocity = A.velocity
+                .add(A.impulse)
+                .add(angularLinearVelocityA)
+                .subtract(B.velocity)
+                .subtract(B.impulse)
+                .subtract(angularLinearVelocityB);
 
             let tangent = relativeVelocity.subtract(n.multiplyScalar(relativeVelocity.dot(n)));
 
@@ -130,16 +172,22 @@ export class Physics
 
             let frictionImpulse;
 
+            const j = this.contactsJVal.shift();
+
+            if (j === undefined) throw new Error('j value is undefined');
+
             if (Math.abs(jt) <= j * staticFriction) frictionImpulse = tangent.multiplyScalar(jt);
             else frictionImpulse = tangent.multiplyScalar(-jt * kineticFriction);
-
-            A.addTorque(-ra.cross(frictionImpulse) / A.inertia);
-            B.addTorque(rb.cross(frictionImpulse) / B.inertia);
-            A.addForce(frictionImpulse.multiplyScalar(-1 / A.mass));
-            B.addForce(frictionImpulse.multiplyScalar(1 / B.mass));
+            torqueA += -ra.cross(frictionImpulse) / A.inertia;
+            torqueB += rb.cross(frictionImpulse) / B.inertia;
+            impulseA.add(frictionImpulse.multiplyScalar(-1 / A.mass));
+            impulseB.add(frictionImpulse.multiplyScalar(1 / B.mass));
         }
+        A.addTorque(torqueA);
+        B.addTorque(torqueB);
+        A.addForce(impulseA);
+        B.addForce(impulseB);
     }
-
     private static addSlop(impulse : Point)
     {
         const slop = 0.01;

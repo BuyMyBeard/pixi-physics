@@ -140,6 +140,16 @@ export abstract class Body extends Container
     {
         return this._torque;
     }
+    /** Lineal impulse applied on the next physics substep */
+    public get impulse()
+    {
+        return this._impulse;
+    }
+    /** Angular impulse applied on the next physics substep */
+    public get angularImpulse()
+    {
+        return this._angularImpulse;
+    }
     /** This body's layer, by default 0. To change this, make sure to call Layers.addLayer() with the new layer first. */
     public get layer()
     {
