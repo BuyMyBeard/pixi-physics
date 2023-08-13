@@ -140,6 +140,28 @@ export class Physics
         }
     }
 
+    private static addSlop(impulse : Point)
+    {
+        const slop = 0.01;
+
+        const signX = Math.sign(impulse.x);
+        const signY = Math.sign(impulse.y);
+
+        const biasX = Math.max(Math.abs(impulse.x) - slop, 0);
+        const biasY = Math.max(Math.abs(impulse.y) - slop, 0);
+
+        return new Point(biasX * signX, biasY * signY);
+    }
+
+    private static addAngularSlop(impulse : number)
+    {
+        const angularSlop = 0.00001;
+        const angularVelocitySign = Math.sign(impulse);
+        const biasAngularVelocity = Math.max(Math.abs(impulse) - angularSlop, 0);
+
+        return angularVelocitySign * biasAngularVelocity;
+    }
+
     /**
      * Finds resolutions to applied to bodies to push them outside each other
      * @param collision Collision information
@@ -150,7 +172,7 @@ export class Physics
         const body1 = collision.c1;
         const body2 = collision.c2;
 
-        const slop = 0.5;
+        const slop = 0;
 
         const moveDistance = collision.depth;
         const bias = Math.max(moveDistance - slop, 0);
@@ -226,21 +248,11 @@ export class Physics
         {
             if (b.isStatic) continue;
             b.applyCurrentForce(deltaTime);
-            const slop = 0.05;
-            const signX = Math.sign(b.velocity.x);
-            const signY = Math.sign(b.velocity.y);
 
-            const biasX = Math.max(Math.abs(b.velocity.x) - slop, 0);
-            const biasY = Math.max(Math.abs(b.velocity.y) - slop, 0);
+            b.x += b.velocity.x * deltaTime;
+            b.y += b.velocity.y * deltaTime;
 
-            b.x += signX * biasX * deltaTime;
-            b.y += signY * biasY * deltaTime;
-
-            const angularSlop = 0.000001;
-            const angularVelocitySign = Math.sign(b.angularVelocity);
-            const biasAngularVelocity = Math.max(Math.abs(b.angularVelocity) - angularSlop, 0);
-
-            b.rotation += biasAngularVelocity * angularVelocitySign * deltaTime;
+            b.rotation += b.angularVelocity * deltaTime;
             b.updateBoundingBox();
         }
     }

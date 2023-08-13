@@ -35,7 +35,6 @@ export abstract class Body extends Container
     protected _torque = 0;
     protected _angularImpulse = 0;
     protected _inertia = -1;
-
     /**
      * If set to true, prevents physics from modifying the rotation of this body
      */
@@ -175,6 +174,11 @@ export abstract class Body extends Container
             this.angularVelocity += this._torque * deltaTime;
             this.angularVelocity += this._angularImpulse;
         }
+        // if (this._impulse.x > 0.1 || this._impulse.y > 0.1 || this._angularImpulse > 0.1)
+        // {
+        //     console.log(this.name, this._impulse.x, this._impulse.y);
+        //     console.log(this.name, this._angularImpulse);
+        // }
         this._impulse.set(0, 0);
         this._angularImpulse = 0;
     }

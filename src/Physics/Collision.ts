@@ -310,9 +310,9 @@ export class Collision
             {
                 const distance = MathUtils.pointLineDistance(v, s);
 
-                if (MathUtils.nearlyEqual(distance, minDistance))
+                if (MathUtils.nearlyEqual(distance, minDistance, 0.1))
                 {
-                    if (!MathUtils.nearlyEqualPoint(v, contact1)) contact2 = v;
+                    if (!MathUtils.nearlyEqualPoint(v, contact1, 0.1)) contact2 = v;
                 }
                 else if (distance < minDistance)
                 {
