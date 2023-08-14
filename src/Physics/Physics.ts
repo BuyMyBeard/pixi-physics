@@ -93,10 +93,10 @@ export class Physics
             const raPerp = new Point(-ra.y, ra.x);
             const rbPerp = new Point(-rb.y, rb.x);
 
-            const angularLinearVelocityA = raPerp.multiplyScalar(A.angularVelocity);
-            const angularLinearVelocityB = rbPerp.multiplyScalar(B.angularVelocity);
+            let angularLinearVelocityA = raPerp.multiplyScalar(A.angularVelocity);
+            let angularLinearVelocityB = rbPerp.multiplyScalar(B.angularVelocity);
 
-            const relativeVelocity = A.velocity
+            let relativeVelocity = A.velocity
                 .add(angularLinearVelocityA)
                 .subtract(B.velocity)
                 .subtract(angularLinearVelocityB);
@@ -115,6 +115,14 @@ export class Physics
             B.addTorque(-rb.cross(impulse) / B.inertia);
             A.addForce(impulse.multiplyScalar(1 / A.mass));
             B.addForce(impulse.multiplyScalar(-1 / B.mass));
+
+            angularLinearVelocityA = raPerp.multiplyScalar(A.angularVelocity);
+            angularLinearVelocityB = rbPerp.multiplyScalar(B.angularVelocity);
+
+            relativeVelocity = A.velocity
+                .add(angularLinearVelocityA)
+                .subtract(B.velocity)
+                .subtract(angularLinearVelocityB);
 
             let tangent = relativeVelocity.subtract(n.multiplyScalar(relativeVelocity.dot(n)));
 
@@ -137,6 +145,8 @@ export class Physics
             B.addTorque(rb.cross(frictionImpulse) / B.inertia);
             A.addForce(frictionImpulse.multiplyScalar(-1 / A.mass));
             B.addForce(frictionImpulse.multiplyScalar(1 / B.mass));
+            A.applyCurrentForce(0);
+            B.applyCurrentForce(0);
         }
     }
 
