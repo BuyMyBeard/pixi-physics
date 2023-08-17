@@ -1,10 +1,9 @@
 import { Circle, Point } from 'pixi.js';
 
-/**
- * Line segment composed of 2 points
- */
+/** Line segment composed of 2 points */
 export type Segment = [Point, Point];
-
+/** Triangle conposed of 3 points */
+export type Triangle = [Point, Point, Point];
 /**
  * Various static methods to help with general math utilities
  */
@@ -295,7 +294,7 @@ export class MathUtils
         return (o1 !== o2 && o3 !== o4);
     }
     // taken from https://www.jeffreythompson.org/collision-detection/line-line.php
-    /** Honestly kinda fucking disgusting */
+    /** Honestly kinda fucking disgusting to look at */
     static segmentsIntersect2(s1 : Segment, s2 : Segment)
     {
     // calculate the distance to intersection point
@@ -307,4 +306,68 @@ export class MathUtils
         // if uA and uB are between 0-1, lines are colliding
         return uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1;
     }
+
+    public static triangleArea([p1, p2, p3] : Triangle)
+    {
+        // calculated with Heron's formula
+        const a = p2.subtract(p1).magnitude();
+        const b = p3.subtract(p2).magnitude();
+        const c = p1.subtract(p3).magnitude();
+
+        const s = (a + b + c) / 2;
+
+        return Math.sqrt(s * (s - a) * (s - b) * (s - c));
+    }
+
+    public static pointInsideTriangle(p0 : Point, [p1, p2, p3] : Triangle)
+    {
+        const p1p2p3Area = this.triangleArea([p1, p2, p3]);
+        const p0p1p2Area = this.triangleArea([p0, p1, p2]);
+        const p0p2p3Area = this.triangleArea([p0, p2, p3]);
+        const p0p3p1Area = this.triangleArea([p0, p3, p1]);
+
+        // to account for floating point precision
+        return (p1p2p3Area.toPrecision(6) === (p0p1p2Area + p0p2p3Area + p0p3p1Area).toPrecision(6));
+    }
+    public static triangulatePolygon(vertices : Point[]) : Triangle[]
+    {
+        // Uses Ear-clipping algorithm
+
+        
+
+        return [];
+    }
+
+    public static getPolygonInfo(vertices : Point[]) : PolygonInfo
+    {
+        let clockwise = 0;
+        let antiClockwise = 0;
+        let flat = 0;
+        const length = vertices.length;
+
+        for (let i = 0; i < length; i++)
+        {
+            const orientation = MathUtils.orientation(vertices[i], vertices[(i + 1) % length], vertices[(i + 2) % length]);
+
+            if (orientation === 1) clockwise++;
+            else if (orientation === -1) antiClockwise++;
+            else flat++;
+        }
+        if (length - flat < 3)
+        {
+            throw new Error('Not a polygon, too many flat angles');
+        }
+        const isConvex = ((clockwise !== 0) !== (antiClockwise !== 0));
+        const clockWise = clockwise > antiClockwise;
+
+        return {
+            isConvex,
+            clockWise
+        };
+    }
 }
+
+export type PolygonInfo = {
+    isConvex: boolean,
+    clockWise: boolean,
+};
