@@ -23,7 +23,7 @@ export const app = new Application({
 // const bt = new BinaryTree<string>();
 // const data = Array.from('In computer science, an abstract syntax tree (AST), or just syntax tree, is a tree representation of the abstract syntactic structure of text (often source code) written in a formal language. Each node of the tree denotes a construct occurring in the text. The syntax is "abstract" in the sense that it does not represent every detail appearing in the real syntax, but rather just the structural or content-related details. For instance, grouping parentheses are implicit in the tree structure, so these do not have to be represented as separate nodes. Likewise, a syntactic construct like an if-condition-then statement may be denoted by means of a single node with three branches. This distinguishes abstract syntax trees from concrete syntax trees, traditionally designated parse trees. Parse trees are typically built by a parser during the source code translation and compiling process. Once built, additional information is added to the AST by means of subsequent processing, e.g., contextual analysis. Abstract syntax trees are also used in program analysis and program transformation systems.');
 
-console.log(Raycast.lineIntersectCircle([new Point(0, 0), new Point(1, 1)], new Circle(0, 0.5, 1)));
+// console.log(Raycast.lineIntersectCircle([new Point(0, 0), new Point(1, 1)], new Circle(0, 0.5, 1)));
 
 Layers.addLayer(1, 'balls', true);
 Layers.addLayer(2, 'polygons', true);
@@ -42,6 +42,14 @@ const vertices2 : Point[] = [
     new Point(400, 400),
     new Point(200, 400),
 ];
+
+const vertices3 : Point[] = [
+    new Point(100, 100),
+    new Point(400, 200),
+    new Point(400, 400),
+    new Point(200, 400),
+    new Point(150, 150),
+];
 const platformVertices : Point[] = [
     new Point(-100, -5),
     new Point(100, -5),
@@ -49,17 +57,18 @@ const platformVertices : Point[] = [
     new Point(-100, 5),
 ];
 
+console.log(MathUtils.triangulatePolygon(vertices3));
 // for (let i = 0; i < 10; i++)
 // {
-//     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
-//     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
-//     const isStatic = MathUtils.randomBool(0.1);
-//     const lineStyle = {
-//         width: 1,
-//         color: isStatic ? 'red' : 'black',
-//     };
+    //     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
+    //     const velocity = new Point((Math.random() * 6) - 3, (Math.random() * 6) - 3);
+    //     const isStatic = MathUtils.randomBool(0.1);
+    //     const lineStyle = {
+        //         width: 1,
+        //         color: isStatic ? 'red' : 'black',
+        //     };
 
-//     const c = new CircleBody({
+        //     const c = new CircleBody({
 //         position,
 //         // velocity,
 //         radius: (Math.random() * 30) + 5,

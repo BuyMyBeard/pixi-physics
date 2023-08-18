@@ -331,9 +331,53 @@ export class MathUtils
     }
     public static triangulatePolygon(vertices : Point[]) : Triangle[]
     {
+        const v = [...vertices];
+        const triangles : Triangle[] = [];
         // Uses Ear-clipping algorithm
+        const polyInfo = this.getPolygonInfo(vertices);
+        let i = 0;
 
-        
+        while (++i)
+        {
+            if (i > vertices.length) throw new Error('Max iterations reached');
+            if (v.length === 3)
+            {
+                triangles.push([v[0], v[1], v[2]]);
+
+                return triangles;
+            }
+            const sideCount = v.length;
+
+            for (let i = 0; i < sideCount; i++)
+            {
+                const p1 = v[(i - 1 + sideCount) % sideCount];
+                const p2 = v[(i) % sideCount];
+                const p3 = v[(i + 1) % sideCount];
+                const clockwise = this.orientation(p1, p2, p3) === 1;
+
+                if (clockwise !== polyInfo.isClockwise) continue;
+
+                const start = (i + 2) % sideCount;
+                const end = (i - 2 + sideCount) % sideCount;
+                let isEar = true;
+
+                for (let j = start; j !== end; j = (j + 1) % sideCount)
+                {
+                    if (this.pointInsideTriangle(v[j], [p1, p2, p3]))
+                    {
+                        isEar = false;
+                        break;
+                    }
+                }
+
+                if (isEar)
+                {
+                    triangles.push([p1, p2, p3]);
+                    v.splice(i, 1);
+                    break;
+                }
+            }
+        }
 
         return [];
     }
@@ -358,16 +402,16 @@ export class MathUtils
             throw new Error('Not a polygon, too many flat angles');
         }
         const isConvex = ((clockwise !== 0) !== (antiClockwise !== 0));
-        const clockWise = clockwise > antiClockwise;
+        const isClockwise = clockwise > antiClockwise;
 
         return {
             isConvex,
-            clockWise
+            isClockwise
         };
     }
 }
 
 export type PolygonInfo = {
     isConvex: boolean,
-    clockWise: boolean,
+    isClockwise: boolean,
 };
