@@ -1,0 +1,15 @@
+Click anywhere on the screen to spawn a shape
+
+you can press keys to affect the shapes that will be spawned
+
+Up Arrow - Grow
+Down Arrow - Shrink
+Left Arrow - Rotate anti-clockwise
+Right Arrow - Rotate clockwise
+
+C - Circle
+V - Triangle
+B - Square
+N - Rectangle
+M - Polygon (randomly generated with 3-10 sides)
+
