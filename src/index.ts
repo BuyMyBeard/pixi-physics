@@ -1,4 +1,4 @@
-import { Application, Ticker, Point, Circle, FederatedPointerEvent, EventSystem, Container, Sprite } from 'pixi.js';
+import { Application, Ticker, Point, FederatedPointerEvent, Sprite } from 'pixi.js';
 import { PolygonBody } from './Body/PolygonBody';
 import { MathUtils } from './Utils/MathUtils';
 import { Body } from './Body/Body';
@@ -8,8 +8,6 @@ import { ScreenContainer } from './ScreenContainer';
 import { Debug } from './Utils/Debug';
 import { CircleBody } from './Body/CircleBody';
 import { Layers } from './Physics/Layers';
-import { BinaryTree } from './Utils/BinaryTree';
-import { Raycast } from './Physics/Raycast';
 
 export const app = new Application({
     view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
@@ -31,25 +29,11 @@ Layers.addLayer(2, 'polygons', true);
 // Layers.setInteraction(1, 2, false);
 Layers.setInteraction(2, 2, false);
 
-const vertices : Point[] = [
+const boxVertices : Point[] = [
     new Point(-50, -50),
     new Point(50, -50),
     new Point(50, 50),
     new Point(-50, 50),
-];
-const vertices2 : Point[] = [
-    new Point(100, 100),
-    new Point(400, 200),
-    new Point(400, 400),
-    new Point(200, 400),
-];
-
-const vertices3 : Point[] = [
-    new Point(100, 100),
-    new Point(400, 200),
-    new Point(400, 400),
-    new Point(200, 400),
-    new Point(150, 150),
 ];
 const platformVertices : Point[] = [
     new Point(-100, -5),
@@ -275,7 +259,7 @@ clickContainer.on('pointertap', (e : FederatedPointerEvent) =>
     }
     else if (type === 'Box')
     {
-        const p = new PolygonBody(vertices, params);
+        const p = new PolygonBody(boxVertices, params);
 
         p.addForce(new Point(0, 0.2), false);
         p.name = `box ${Body.bodyPool.length}`;
