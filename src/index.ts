@@ -21,6 +21,7 @@ export const app = new Application({
 });
 
 // const bt = new BinaryTree<string>();
+// eslint-disable-next-line max-len
 // const data = Array.from('In computer science, an abstract syntax tree (AST), or just syntax tree, is a tree representation of the abstract syntactic structure of text (often source code) written in a formal language. Each node of the tree denotes a construct occurring in the text. The syntax is "abstract" in the sense that it does not represent every detail appearing in the real syntax, but rather just the structural or content-related details. For instance, grouping parentheses are implicit in the tree structure, so these do not have to be represented as separate nodes. Likewise, a syntactic construct like an if-condition-then statement may be denoted by means of a single node with three branches. This distinguishes abstract syntax trees from concrete syntax trees, traditionally designated parse trees. Parse trees are typically built by a parser during the source code translation and compiling process. Once built, additional information is added to the AST by means of subsequent processing, e.g., contextual analysis. Abstract syntax trees are also used in program analysis and program transformation systems.');
 
 // console.log(Raycast.lineIntersectCircle([new Point(0, 0), new Point(1, 1)], new Circle(0, 0.5, 1)));
@@ -57,7 +58,20 @@ const platformVertices : Point[] = [
     new Point(-100, 5),
 ];
 
-console.log(MathUtils.triangulatePolygon(vertices3));
+const triangleVertices : Point[] = [
+    new Point(-50, 50),
+    new Point(0, -50),
+    new Point(50, 50),
+];
+
+const rectangleVertices : Point[] = [
+    new Point(-80, -40),
+    new Point(80, -40),
+    new Point(80, 40),
+    new Point(-80, 40),
+];
+
+// console.log(MathUtils.triangulatePolygon(vertices3));
 // for (let i = 0; i < 10; i++)
 // {
     //     const position = new Point(MathUtils.getRandom(70, app.view.width - 70), MathUtils.getRandom(70, app.view.height - 70));
@@ -137,21 +151,21 @@ console.log(MathUtils.triangulatePolygon(vertices3));
 
 new ScreenContainer();
 
-// const platform1 = new PolygonBody(platformVertices, {
-//     position: new Point(300, 200),
-//     isStatic: true,
-//     color: 'black',
-//     rotation: Math.PI / 6,
-//     scale: new Point(4, 1),
-// });
+const platform1 = new PolygonBody(platformVertices, {
+    position: new Point(300, 200),
+    isStatic: true,
+    color: 'black',
+    rotation: Math.PI / 6,
+    scale: new Point(4, 1),
+});
 
-// const platform2 = new PolygonBody(platformVertices, {
-//     position: new Point(1000, 500),
-//     isStatic: true,
-//     color: 'black',
-//     rotation: -Math.PI / 6,
-//     scale: new Point(4, 1),
-// });
+const platform2 = new PolygonBody(platformVertices, {
+    position: new Point(1000, 500),
+    isStatic: true,
+    color: 'black',
+    rotation: -Math.PI / 6,
+    scale: new Point(4, 1),
+});
 
 // c2.onCollisionEnter = (c) => console.log(c);
 // c2.onCollisionStay = () => console.log('stayed');
@@ -206,15 +220,25 @@ function moveBodyWithInputs(deltaTime : number, body : Body, addEnergy = false, 
             break;
     }
 }
-type ShapeType = 'Circle' | 'Box';
+type ShapeType = 'Circle' | 'Box' | 'Triangle' | 'Rectangle' | 'Polygon';
 
 let type : ShapeType = 'Box';
+let scale = 1;
+let rotation = 0;
 
 document.addEventListener('keydown', (ev) =>
 {
     if (ev.key === 'b') type = 'Box';
     else if (ev.key === 'c') type = 'Circle';
+    else if (ev.key === 'v') type = 'Triangle';
+    else if (ev.key === 'n') type = 'Rectangle';
+    else if (ev.key === 'm') type = 'Polygon';
+    else if (ev.key === 'ArrowUp' && scale < 4) scale += 0.2;
+    else if (ev.key === 'ArrowDown' && scale > 1) scale -= 0.2;
+    else if (ev.key === 'ArrowLeft') rotation -= Math.PI / 6;
+    else if (ev.key === 'ArrowRight') rotation += Math.PI / 6;
 });
+
 
 Ticker.shared.add(updateLoop);
 
@@ -235,7 +259,7 @@ clickContainer.on('pointertap', (e : FederatedPointerEvent) =>
         position: new Point(e.globalX, e.globalY),
         color: Math.random() * 16777215,
         lineStyle,
-        mass: 1,
+        mass: scale,
         bounciness: 0.1,
     };
 
@@ -245,6 +269,9 @@ clickContainer.on('pointertap', (e : FederatedPointerEvent) =>
 
         p.addForce(new Point(0, 0.2), false);
         p.name = `circle ${Body.bodyPool.length}`;
+        p.scale.set(scale);
+        p.radius *= p.scale.x;
+        p.rotation = rotation;
     }
     else if (type === 'Box')
     {
@@ -252,5 +279,34 @@ clickContainer.on('pointertap', (e : FederatedPointerEvent) =>
 
         p.addForce(new Point(0, 0.2), false);
         p.name = `box ${Body.bodyPool.length}`;
+        p.scale.set(scale);
+        p.rotation = rotation;
+    }
+    else if (type === 'Triangle')
+    {
+        const p = new PolygonBody(triangleVertices, params);
+
+        p.addForce(new Point(0, 0.2), false);
+        p.name = `triangle ${Body.bodyPool.length}`;
+        p.scale.set(scale);
+        p.rotation = rotation;
+    }
+    else if (type === 'Rectangle')
+    {
+        const p = new PolygonBody(rectangleVertices, params);
+
+        p.addForce(new Point(0, 0.2), false);
+        p.name = `rectangle ${Body.bodyPool.length}`;
+        p.scale.set(scale);
+        p.rotation = rotation;
+    }
+    else if (type === 'Polygon')
+    {
+        const p = new PolygonBody(MathUtils.generatePolygon(), params);
+
+        p.addForce(new Point(0, 0.2), false);
+        p.name = `polygon ${Body.bodyPool.length}`;
+        p.scale.set(scale);
+        p.rotation = rotation;
     }
 });

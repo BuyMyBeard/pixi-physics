@@ -409,6 +409,162 @@ export class MathUtils
             isClockwise
         };
     }
+    public static generatePolygon()
+    {
+        // code from https://observablehq.com/@tarte0/generate-random-convex-polygon#generateCoordinates
+        const generateCoordinates = (n : number) =>
+        {
+            // Generate two lists of random X and Y coordinates
+            const xPool = [];
+            const yPool = [];
+
+            for (let i = 0; i < n; i++)
+            {
+                xPool.push(Math.random());
+                yPool.push(Math.random());
+            }
+
+            // Sort them
+            xPool.sort();
+            yPool.sort();
+
+            // Isolate the extreme points
+            const minX = xPool[0];
+            const maxX = xPool[n - 1];
+            const minY = yPool[0];
+            const maxY = yPool[n - 1];
+
+            return { xPool, yPool, minX, maxX, minY, maxY };
+        };
+        const shuffle = (a : any) =>
+        {
+            for (let i = a.length - 1; i > 0; i--)
+            {
+                const j = Math.floor(Math.random() * (i + 1));
+
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+
+            return a;
+        };
+
+        const generateVectors = (coord : any) =>
+        {
+            // Divide the interior points of the coordinates into two chains & extract the vector components
+            const xVec = [];
+            const yVec = [];
+            const n = coord.xPool.length;
+
+            let lastTop = coord.minX; let
+                lastBot = coord.minX;
+
+            for (let i = 1; i < n - 1; i++)
+            {
+                const x = coord.xPool[i];
+
+                if (Math.random() < 0.5)
+                {
+                    xVec.push(x - lastTop);
+                    lastTop = x;
+                }
+                else
+                {
+                    xVec.push(lastBot - x);
+                    lastBot = x;
+                }
+            }
+
+            xVec.push(coord.maxX - lastTop);
+            xVec.push(lastBot - coord.maxX);
+
+            let lastLeft = coord.minY; let
+                lastRight = coord.minY;
+
+            for (let i = 1; i < n - 1; i++)
+            {
+                const y = coord.yPool[i];
+
+                if (Math.random() < 0.5)
+                {
+                    yVec.push(y - lastLeft);
+                    lastLeft = y;
+                }
+                else
+                {
+                    yVec.push(lastRight - y);
+                    lastRight = y;
+                }
+            }
+
+            yVec.push(coord.maxY - lastLeft);
+            yVec.push(lastRight - coord.maxY);
+
+            // Randomly pair up the X- and Y-components
+            shuffle(yVec);
+
+            // Combine the paired up components into vectors
+            const vec = [];
+
+            for (let i = 0; i < n; i++)
+            {
+                vec.push([xVec[i], yVec[i]]);
+            }
+
+            return vec;
+        };
+
+        const generatePolygon = (n : number, width : number, height : number) =>
+        {
+            const coord = generateCoordinates(n);
+            const vec = generateVectors(coord);
+
+            // Sort the vectors by angle
+            vec.sort((u, v) => Math.atan2(u[1], u[0]) - Math.atan2(v[1], v[0]));
+
+            // Lay them end-to-end
+            let x = 0; let
+                y = 0;
+            let minPolygonX = 0;
+            let minPolygonY = 0;
+            const points = [];
+
+            for (let i = 0; i < n; i++)
+            {
+                points.push([x, y]);
+
+                x += vec[i][0];
+                y += vec[i][1];
+
+                minPolygonX = Math.min(minPolygonX, x);
+                minPolygonY = Math.min(minPolygonY, y);
+            }
+
+            // Move the polygon to the original min and max coordinates
+            const xShift = coord.minX - minPolygonX;
+            const yShift = coord.minY - minPolygonY;
+
+            for (let i = 0; i < n; i++)
+            {
+                const p : any = points[i];
+
+                points[i] = [(p[0] + xShift) * width, (p[1] + yShift) * height];
+            }
+
+            return points;
+        };
+
+        const pointArray = generatePolygon(Math.floor((Math.random() * 8) + 3), 100, 100);
+
+        const convertedPointArray = pointArray.map((point : any) => new Point(point[0], point[1]));
+
+        const verticesSum = new Point(0, 0);
+
+        convertedPointArray.forEach((v) => verticesSum.set(verticesSum.x + v.x, verticesSum.y + v.y));
+
+        const centroid = verticesSum.multiplyScalar(1 / convertedPointArray.length);
+
+        return convertedPointArray.map((point) => point.subtract(centroid));
+    }
 }
 
 export type PolygonInfo = {
