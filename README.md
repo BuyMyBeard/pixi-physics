@@ -2,6 +2,8 @@
 
 ## Physics engine plugin tailored for PixiJS
 
+Live interactive example [here](https://buymybeard.github.io/pixi-physics/). Refer to [this](https://github.com/BuyMyBeard/pixi-physics/blob/main/TestingInputs.txt) for input mapping.
+
 I've taken an interest in 2d physics engines after working on multiple Unity 2d platformers, so I decided to make my own physics engine! I already have a sweet spot for Pixijs as a rendering engine, since I made my first few jam games with it. At heart, it's not a framework, so I wanted to contribute to it by making a plugin that works seemlessly and does all you want a 2d physics engine to do.
 
 I know a few integrations of pre-existing 2d physics engines have already been done with PixiJS, like Matterjs and Box2D, but I don't like the idea of having to sync the renderer and the physics simulation. Making the physics use PixiJS's DisplayObject transform is a lot more intuitive overall, and avoids problems where the 2 are out of sync, while also probably being faster and more memory efficient (don't quote me, I didn't benchmark it).
